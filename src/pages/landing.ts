@@ -1,3 +1,8 @@
+//importar el estado global y el dispatch
+import { appState, dispatch } from "../store/store";
+//importar accion para cambiar de pantalla
+import { changeScreen } from "../store/actions";
+
 class LandingPage extends HTMLElement {
     constructor() {
         super();
@@ -126,7 +131,7 @@ class LandingPage extends HTMLElement {
                             <h1>Comparte tus pensamientos en SimplePost</h1>
                             <p>Una plataforma simple para compartir ideas, reaccionar y comentar. Conéctate de manera sencilla.</p>
                             <a href="#" class="button">Únete ahora</a>
-                            <a href="#" class="button secondary">Explora posts</a>
+                            <a href="#" id="go-to-main" class="button secondary">Explora posts</a>
                         </section>
                         <section class="features">
                             <h2>Características simples, gran impacto</h2>
@@ -167,10 +172,12 @@ class LandingPage extends HTMLElement {
                     </footer>
                 </div>
             `;
+            const goToMainButton = this.shadowRoot.querySelector('#go-to-main');
+            goToMainButton?.addEventListener('click', () => {
+                dispatch(changeScreen('home'));
+            });
         }
     }
 }
 
 customElements.define('landing-page', LandingPage);
-
-export default LandingPage;

@@ -1,7 +1,7 @@
 import { reducer } from './reducers'
 //Estado Global para la renderización de la pantalla
 export let appState = {
-    screen: 'home',
+    screen: 'landing',
 }
 //Crear el dispatch
 export const dispatch = (action: any) => {
