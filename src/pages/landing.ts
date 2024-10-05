@@ -2,6 +2,8 @@
 import { appState, dispatch } from "../store/store";
 //importar accion para cambiar de pantalla
 import { changeScreen } from "../store/actions";
+//importar el componente de navegacion
+import '../components/navigation/NavBar';
 
 class LandingPage extends HTMLElement {
     constructor() {
@@ -28,24 +30,6 @@ class LandingPage extends HTMLElement {
                         margin: 0 auto;
                         padding: 0 20px;
                     }
-                    header {
-                        display: flex;
-                        justify-content: space-between;
-                        align-items: center;
-                        padding: 1rem;
-                    }
-                    .logo {
-                        font-size: 1.5rem;
-                        font-weight: bold;
-                    }
-                    nav ul {
-                        display: flex;
-                        list-style: none;
-                        padding: 0;
-                    }
-                    nav ul li {
-                        margin-left: 1rem;
-                    }
                     a {
                         text-decoration: none;
                         color: #000;
@@ -53,6 +37,7 @@ class LandingPage extends HTMLElement {
                     .hero {
                         text-align: center;
                         padding: 3rem 0;
+                        margin-top: 2rem;
                     }
                     h1 {
                         font-size: 2.5rem;
@@ -117,15 +102,7 @@ class LandingPage extends HTMLElement {
                     }
                 </style>
                 <div class="container">
-                    <header>
-                        <div class="logo">SimplePost</div>
-                        <nav>
-                            <ul>
-                                <li><a href="#">Acerca de</a></li>
-                                <li><a href="#">Contacto</a></li>
-                            </ul>
-                        </nav>
-                    </header>
+                    <navbar-component></navbar-component>
                     <main>
                         <section class="hero">
                             <h1>Comparte tus pensamientos en SimplePost</h1>
