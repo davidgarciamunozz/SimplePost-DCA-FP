@@ -36,6 +36,7 @@ class Post extends HTMLElement {
                     break;
             }
             this.render();
+
         }
     }
 

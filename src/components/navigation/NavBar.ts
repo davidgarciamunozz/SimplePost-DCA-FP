@@ -1,7 +1,7 @@
 //importar el estado global, el dispatch y el subscribe
 import { appState,  dispatch } from "../../store/store";
 //importar la acción para cambiar de pantalla
-import { changeScreen } from "../../store/actions";
+import { navigate } from "../../store/actions";
 
 class Navbar extends HTMLElement {
     
@@ -162,7 +162,7 @@ class Navbar extends HTMLElement {
             // Evento para cambiar de pantalla
             const perfilButton = this.shadowRoot.querySelector('#perfil');
             perfilButton?.addEventListener('click', () => {
-                dispatch(changeScreen('landing'));
+                dispatch(navigate('landing'));
                 console.log(appState);
             }
                 
