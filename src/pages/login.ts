@@ -1,3 +1,7 @@
+import { navigate } from "../store/actions";
+import { dispatch } from "../store/store";
+import { loginUser } from "../utils/firebase";
+
 class LoginPage extends HTMLElement {
     private formData: {
         email: string;
@@ -29,9 +33,15 @@ class LoginPage extends HTMLElement {
             });
         });
 
-        form?.addEventListener('submit', (e: Event) => {
+        form?.addEventListener('submit', async (e: Event) => {
             e.preventDefault();
-                console.log('Form data:', this.formData);
+            console.log('Form data:', this.formData);
+            try {
+                await loginUser(this.formData.email, this.formData.password);
+                dispatch(navigate('HOME'));
+            } catch (error) {
+                console.error(error);
+            }
         });
     }
 

@@ -1,3 +1,7 @@
+import { dispatch } from "../store/store";
+import { navigate } from "../store/actions";
+import { registerUser } from "../utils/firebase";
+
 class RegisterPage extends HTMLElement {
     private formData: {
         username: string;
@@ -30,14 +34,32 @@ class RegisterPage extends HTMLElement {
             input.addEventListener('input', (e: Event) => {
                 const target = e.target as HTMLInputElement;
                 this.formData[target.name as keyof typeof this.formData] = target.value;
+                // console.log(`Valor capturado para ${target.name}:`, target.value);
             });
         });
 
-        form?.addEventListener('submit', (e: Event) => {
+        form?.addEventListener('submit', async (e: Event) => {
             e.preventDefault();
             if (this.validateForm()) {
-                console.log('Form data:', this.formData);
-                // Add your API call here
+                try {
+                    console.log("Datos enviados al registrar usuario:", this.formData);
+                    const success = await registerUser({
+                        email: this.formData.email,
+                        password: this.formData.password,
+                        username: this.formData.username
+                    });
+
+                    if (success) {
+                        alert('Registro exitoso!');
+                        // Navegar a otra página o realizar otra acción
+                        dispatch(navigate("LOGIN"));
+                    } else {
+                        alert('Hubo un error en el registro.');
+                    }
+                } catch (error) {
+                    console.error("Error en el registro:", error);
+                    alert("Error en el registro. Intenta nuevamente.");
+                }
             }
         });
     }
