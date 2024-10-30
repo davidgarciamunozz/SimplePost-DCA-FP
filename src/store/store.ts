@@ -1,7 +1,7 @@
 import { reducer } from './reducers'
 //Estado Global para la renderización de la pantalla
 export let appState = {
-    screen: 'landing',
+    screen: 'REGISTER',
 }
 //Crear el dispatch
 export const dispatch = (action: any) => {
@@ -18,3 +18,6 @@ let observers: any[] = []
 export const subscribe = (observer: any) => {
     observers.push(observer)
 }
+
+// Global State Documentation 
+// https://www.freecodecamp.org/news/what-is-redux-store-actions-reducers-explained/

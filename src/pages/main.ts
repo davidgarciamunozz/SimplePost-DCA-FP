@@ -43,6 +43,7 @@ class MainPage extends HTMLElement {
                 //mostrar los posts
                 this.posts.forEach((post) => {
                     this.createPostComponent(post);
+                    
                 });
     }
     // Método para añadir un nuevo post dinámicamente
