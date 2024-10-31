@@ -2,6 +2,7 @@
 import { appState,  dispatch } from "../../store/store";
 //importar la acción para cambiar de pantalla
 import { navigate } from "../../store/actions";
+import { logoutUser } from "../../utils/firebase";
 
 class Navbar extends HTMLElement {
     
@@ -158,6 +159,13 @@ class Navbar extends HTMLElement {
                 </nav>
                 </div>
             `;
+
+            // Evento para cerrar sesión con Firebase
+            const logoutButton = this.shadowRoot.querySelector('#cerrar-sesion');
+            logoutButton?.addEventListener('click', async () => {
+                await logoutUser();
+            });
+        
 
             // Evento para cambiar de pantalla
             const perfilButton = this.shadowRoot.querySelector('#perfil');
