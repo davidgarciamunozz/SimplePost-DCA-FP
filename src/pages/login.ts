@@ -162,6 +162,10 @@ class LoginPage extends HTMLElement {
                     .footer a:hover {
                         text-decoration: underline;
                     }
+                    #redirect {
+                    cursor: pointer;
+                    color: #000;
+                    }
 
                     @media (min-width: 768px) {
                         .container {
@@ -179,7 +183,7 @@ class LoginPage extends HTMLElement {
                                 </svg>
                                 <span class="logo-text">SimplePost</span>
                             </div>
-                            <p class="subtitle">Crea una cuenta y comienza a compartir tus ideas</p>
+                            <p class="subtitle">Inicia Sesión y comparte tus ideas con amigos </p>
                         </div>
 
                         <form>
@@ -210,10 +214,15 @@ class LoginPage extends HTMLElement {
                     </div>
 
                     <div class="footer">
-                        ¿Ya tienes una cuenta? <a href="/login">Inicia sesión</a>
+                        Aún no tienes una cuenta? <span id='redirect'>Regístrate</span>
                     </div>
                 </div>
             `;
+            // Redirect to register page
+            const redirect = this.shadowRoot.querySelector('#redirect');
+            redirect?.addEventListener('click', () => {
+                dispatch(navigate('REGISTER'));
+            })
         }
     }
 }

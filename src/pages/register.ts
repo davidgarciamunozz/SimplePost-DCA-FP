@@ -191,6 +191,10 @@ class RegisterPage extends HTMLElement {
                             padding-top: 4rem;
                         }
                     }
+                    #redirect {
+                        cursor: pointer;
+                        color: #000;
+                    }
                 </style>
 
                 <div class="container">
@@ -253,10 +257,14 @@ class RegisterPage extends HTMLElement {
                     </div>
 
                     <div class="footer">
-                        ¿Ya tienes una cuenta? <a href="/login">Inicia sesión</a>
+                        ¿Ya tienes una cuenta? <span id='redirect'>Inicia sesión</span>
                     </div>
                 </div>
             `;
+            const redirect = this.shadowRoot.querySelector('#redirect');
+            redirect?.addEventListener('click', () => {
+                dispatch(navigate('LOGIN'));
+            });
         }
     }
 }
