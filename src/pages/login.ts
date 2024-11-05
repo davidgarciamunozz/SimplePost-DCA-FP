@@ -38,9 +38,8 @@ class LoginPage extends HTMLElement {
             console.log('Form data:', this.formData);
             try {
                 await loginUser(this.formData.email, this.formData.password);
-                dispatch(navigate('HOME'));
-            } catch (error) {
-                console.error(error);
+            } catch (error:any) {
+                console.error(error.message);
             }
         });
     }

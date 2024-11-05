@@ -170,7 +170,7 @@ class Navbar extends HTMLElement {
             // Evento para cambiar de pantalla
             const perfilButton = this.shadowRoot.querySelector('#perfil');
             perfilButton?.addEventListener('click', () => {
-                dispatch(navigate('landing'));
+                dispatch(navigate('LANDING'));
                 console.log(appState);
             }
                 

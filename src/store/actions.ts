@@ -4,10 +4,3 @@ export const navigate = (screen: string) => {
         payload: screen
     }
 }
-
-export const setUser = (user: any) => {
-    return {
-        action: 'SET_USER',
-        payload: user
-    }
-}

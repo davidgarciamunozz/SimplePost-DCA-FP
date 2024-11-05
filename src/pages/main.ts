@@ -32,6 +32,7 @@ class MainPage extends HTMLElement {
                 dispatch(navigate('LOGIN'));
             }
         });
+
     }
 
     initializePageContent() {
@@ -97,6 +98,22 @@ class MainPage extends HTMLElement {
             <navbar-component></navbar-component>
             <div class="container">
             </div>
+            `;
+        }
+    }
+    renderLoading() {
+        if (this.shadowRoot) {
+            this.shadowRoot.innerHTML = `
+            <style>
+                .loading {
+                    display: flex;
+                    justify-content: center;
+                    align-items: center;
+                    height: 100vh;
+                    font-size: 1.5rem;
+                }
+            </style>
+            <div class="loading">Cargando...</div>
             `;
         }
     }

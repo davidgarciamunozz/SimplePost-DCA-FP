@@ -1,4 +1,4 @@
-import { navigate, setUser } from '../store/actions';
+import { navigate } from '../store/actions';
 import { dispatch } from '../store/store';
 
 let db: any;
@@ -29,8 +29,7 @@ export const getFirebaseInstance = async () => {
             if (user) {
                 // Usuario ha iniciado sesión
                 console.log("Usuario autenticado:", user);
-                dispatch(setUser(user)); // Almacena el usuario en el estado global
-                dispatch(navigate('DASHBOARD')); // Navega al dashboard o pantalla principal
+                dispatch(navigate('HOME')); // Navega a la pantalla principal
             } else {
                 // Usuario no está autenticado
                 console.log("No hay usuario autenticado.");
@@ -62,9 +61,21 @@ export const registerUser = async (credentials: any) => {
 
         // Guardar los datos adicionales en Firestore
         await setDoc(where, data);
+        // Navegar al Login
+        dispatch(navigate('LOGIN'));
         return true;
-    } catch (error) {
-        console.error(error);
+    } catch (error:any) {
+        switch (error.code) {
+            case 'auth/email-already-in-use':
+                alert('El correo electrónico ya está en uso');
+                break;
+            case 'auth/weak-password':
+                alert('La contraseña es muy débil');
+                break;
+            default:
+                console.error('Error al registrar usuario:', error.message);
+                break
+        }
         return false;
     }
 };
@@ -75,11 +86,20 @@ export const loginUser = async (email: string, password: string) => {
         const { signInWithEmailAndPassword, setPersistence, browserLocalPersistence } = await import('firebase/auth');
 
         await setPersistence(auth, browserLocalPersistence);
-        await signInWithEmailAndPassword(auth, email, password);
+        const userCredential = await signInWithEmailAndPassword(auth, email, password);
         console.log("Usuario autenticado con éxito");
+        dispatch(navigate('HOME'));
 
-    } catch (error) {
-        console.error("Error en login:", error);
+    } catch (error:any) {
+        console.error("Error en login:", error.code);
+        switch (error.code) {
+            case 'auth/invalid-credential':
+                alert('Correo o contraseña inválidos');
+                break;
+            default:
+                console.error('Error al iniciar sesión:', error.message);
+                break;
+        }
     }
 };
 

@@ -51,8 +51,6 @@ class RegisterPage extends HTMLElement {
 
                     if (success) {
                         alert('Registro exitoso!');
-                        // Navegar a otra página o realizar otra acción
-                        dispatch(navigate("LOGIN"));
                     } else {
                         alert('Hubo un error en el registro.');
                     }
