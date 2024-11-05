@@ -1,4 +1,4 @@
-import { navigate } from '../store/actions';
+import { navigate, setUser } from '../store/actions';
 import { dispatch } from '../store/store';
 
 let db: any;
@@ -29,6 +29,7 @@ export const getFirebaseInstance = async () => {
             if (user) {
                 // Usuario ha iniciado sesión
                 console.log("Usuario autenticado:", user);
+                dispatch(setUser(user)); // Almacena el usuario en el estado global
                 dispatch(navigate('DASHBOARD')); // Navega al dashboard o pantalla principal
             } else {
                 // Usuario no está autenticado
@@ -76,6 +77,7 @@ export const loginUser = async (email: string, password: string) => {
         await setPersistence(auth, browserLocalPersistence);
         await signInWithEmailAndPassword(auth, email, password);
         console.log("Usuario autenticado con éxito");
+
     } catch (error) {
         console.error("Error en login:", error);
     }

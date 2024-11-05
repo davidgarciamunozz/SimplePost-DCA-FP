@@ -209,7 +209,7 @@ class LoginPage extends HTMLElement {
                                 >
                             </div>
 
-                            <button type="submit">Registrarse</button>
+                            <button type="submit">Iniciar Sesión</button>
                         </form>
                     </div>
 
