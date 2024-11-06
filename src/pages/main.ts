@@ -3,53 +3,70 @@ import PostCreator from '../components/Post/CreatePost';
 import Navbar from '../components/navigation/NavBar';
 import { appState, dispatch } from "../store/store";
 import { navigate } from '../store/actions';
-import { getFirebaseInstance } from '../utils/firebase';
+import { getFirebaseInstance, getPosts } from '../utils/firebase';
 
 class MainPage extends HTMLElement {
-    posts: { post: string; comment: string, author?: string, likes?: number }[] = [
-        { post: 'Post 1', comment: 'This is the first comment', author: 'Axel', likes: 5 },
-        { post: 'Post 2', comment: 'This is the second comment', author: 'Dave' },
-        { post: 'Post 3', comment: 'This is the third comment', author: 'Max Doe', likes: 3 },
-        { post: 'Post 4', comment: 'This is the fourth comment', author: 'David', likes: 10 },
-        { post: 'Post 5', comment: 'This is the fifth comment', author: 'Sarah', likes: 10 },
-        { post: 'Post 6', comment: 'This is the sixth comment', author: 'Alexander', likes: 10 },
-    ];
+    posts: { post: string; comment: string, author?: string, likes?: number }[] = [];
 
-    constructor () {
+    constructor() {
         super();
         this.attachShadow({ mode: 'open' });
     }
 
     async connectedCallback() {
+        this.renderLoading(); // Muestra el mensaje de "Cargando..."
+
         const { auth } = await getFirebaseInstance();
+        if (auth) {
+            auth.onAuthStateChanged(async (user: any) => {
+                if (user) {
+                    console.log('Usuario autenticado');
+                    await this.loadPostsFromFirestore(); // Cargar los posts desde Firestore
+                    this.render(); // Renderizar la estructura base de la página
+                    this.initializePageContent(); // Inicializar y agregar los componentes a la página
+                } else {
+                    dispatch(navigate('LOGIN'));
+                }
+            });
+        }
+    }
 
-        auth && auth.onAuthStateChanged((user:any) => {
-            if (user) {
-                this.render();
-                this.initializePageContent();
-                console.log('Usuario autenticado');
-            } else {
-                dispatch(navigate('LOGIN'));
-            }
-        });
-
+    async loadPostsFromFirestore() {
+        try {
+            const fetchedPosts = await getPosts(); // Obtener los posts de Firestore
+            this.posts = fetchedPosts.map(post => ({
+                post: post.id,
+                comment: post.comment,
+                author: post.author,
+                likes: post.likes || 0,
+            }));
+            console.log('Posts cargados:', this.posts);
+        } catch (error) {
+            console.error("Error al cargar posts:", error);
+        }
     }
 
     initializePageContent() {
-        console.log(appState);
+        const container = this.shadowRoot?.querySelector('.container');
 
+        // Crear y añadir el navbar y el creador de posts
+        const navbar = new Navbar();
+        const postCreator = new PostCreator();
+
+        container?.appendChild(navbar);
+        container?.appendChild(postCreator);
+        
+        // Verifica si los posts están cargados y renderízalos
+        this.posts.forEach((post) => {
+            this.createPostComponent(post);
+        });
+
+
+
+        // Listener para eventos de nuevo post
         this.shadowRoot?.addEventListener('new-post', (event: Event) => {
             const { comment, author } = (event as CustomEvent).detail;
             this.addPost(comment, author);
-        });
-
-        const navbar = new Navbar();
-        const postCreator = new PostCreator();
-        const container = this.shadowRoot?.querySelector('.container');
-        container?.appendChild(postCreator);
-
-        this.posts.forEach((post) => {
-            this.createPostComponent(post);
         });
     }
 
@@ -57,7 +74,7 @@ class MainPage extends HTMLElement {
         const postComponent = new Post();
         postComponent.setAttribute('comment', comment);
         postComponent.setAttribute('author', author);
-        postComponent.setAttribute('likes', '0'); 
+        postComponent.setAttribute('likes', '0');
 
         const container = this.shadowRoot?.querySelector('.container');
         const postCreator = container?.querySelector('post-creator');
@@ -96,11 +113,11 @@ class MainPage extends HTMLElement {
                 }
             </style>
             <navbar-component></navbar-component>
-            <div class="container">
-            </div>
+            <div class="container"></div>
             `;
         }
     }
+
     renderLoading() {
         if (this.shadowRoot) {
             this.shadowRoot.innerHTML = `

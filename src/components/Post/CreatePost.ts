@@ -1,3 +1,5 @@
+import { addPost, getCurrentUserName } from "../../utils/firebase";
+
 class PostCreator extends HTMLElement {
     private textArea: HTMLTextAreaElement | null = null;
     private submitButton: HTMLButtonElement | null = null;
@@ -94,21 +96,28 @@ class PostCreator extends HTMLElement {
         this.submitButton?.addEventListener('click', this.handleSubmit.bind(this));
     }
 
-    handleSubmit() {
+    async handleSubmit() {
         const comment = this.textArea?.value;
-        const author = 'test user'; // Autor predeterminado por ahora
+        const author = getCurrentUserName();
+        
+        if (comment) {
+            try {
+                // Llamar a addPost para agregar el post a Firebase
+                await addPost({ comment, author, likes: 0 });
 
-        if ( comment) {
-              // Emitir evento personalizado con los datos del nuevo post
-              const newPostEvent = new CustomEvent('new-post', {
-                detail: { comment, author },
-                bubbles: true, // Permitir que el evento se propague al shadow DOM
-            });
+                // Emitir evento personalizado con los datos completos del post
+                const newPostEvent = new CustomEvent('new-post', {
+                    detail: { comment, author, likes: 0 },
+                    bubbles: true,
+                });
+                this.dispatchEvent(newPostEvent);
 
-            this.dispatchEvent(newPostEvent);
-
-            // Limpiar textarea después de publicar
-            if (this.textArea) this.textArea.value = '';
+                // Limpiar el textarea después de publicar
+                if (this.textArea) this.textArea.value = '';
+            } catch (error) {
+                console.error("Error al publicar el post:", error);
+                alert("Hubo un error al publicar tu post. Por favor, intenta de nuevo.");
+            }
         } else {
             alert('Por favor, escribe algo antes de publicar');
         }

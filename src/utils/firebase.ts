@@ -147,3 +147,50 @@ export const getCurrentUserName = () => {
     const user = JSON.parse(localStorage.getItem('user') || '{}');
     return user?.username || null;
 };
+
+
+// Función para agregar un post a Firestore
+export const addPost = async (post: any) => {
+    try {
+        const { db, auth } = await getFirebaseInstance();
+        const { addDoc, collection, serverTimestamp } = await import('firebase/firestore');
+
+        // Obtén el ID del usuario autenticado
+        const userId = auth.currentUser?.uid;
+
+        if (!userId) {
+            throw new Error("Usuario no autenticado");
+        }
+
+        // Añade el ID del usuario y la marca de tiempo al post
+        const postWithUser = {
+            ...post,
+            userId,
+            createdAt: serverTimestamp() // Timestamp opcional para saber cuándo fue creado
+        };
+
+        const postsRef = collection(db, 'posts');
+        await addDoc(postsRef, postWithUser);
+
+        console.log("Post agregado con ID de usuario:", userId);
+
+    } catch (error) {
+        console.error("Error al agregar post:", error);
+    }
+};
+
+// Función para obtener todos los posts de Firestore
+export const getPosts = async () => {
+    try {
+        const { db } = await getFirebaseInstance();
+        const { collection, getDocs } = await import('firebase/firestore');
+
+        const postsRef = collection(db, 'posts');
+        const snapshot = await getDocs(postsRef);
+
+        return snapshot.docs.map((doc: any) => ({ id: doc.id, ...doc.data() }));
+    } catch (error) {
+        console.error("Error al obtener posts:", error);
+        return [];
+    }
+};
