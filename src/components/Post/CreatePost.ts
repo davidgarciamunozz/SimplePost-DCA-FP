@@ -102,9 +102,6 @@ class PostCreator extends HTMLElement {
         
         if (comment) {
             try {
-                // Llamar a addPost para agregar el post a Firebase
-                await addPost({ comment, author, likes: 0 });
-
                 // Emitir evento personalizado con los datos completos del post
                 const newPostEvent = new CustomEvent('new-post', {
                     detail: { comment, author, likes: 0 },

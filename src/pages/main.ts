@@ -41,6 +41,7 @@ class MainPage extends HTMLElement {
                 author: post.author,
                 likes: post.likes || 0,
             }));
+            console.log('Posts cargados:', this.posts);
         } catch (error) {
             console.error("Error al cargar posts:", error);
         }
