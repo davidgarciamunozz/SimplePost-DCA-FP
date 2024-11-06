@@ -125,10 +125,10 @@ class Navbar extends HTMLElement {
                 </style>
                 <div class="nav-container">
                 <nav class="navbar">
-                    <a href="/" class="logo">
+                    <div class="logo">
                         <div class="logo-icon"></div>
                         SimplePost
-                    </a>
+                    </div>
                     <button class="menu-toggle">☰</button>
                     <div class="nav-buttons">
                     ${isLandingScreen 

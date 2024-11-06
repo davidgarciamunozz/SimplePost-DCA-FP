@@ -25,14 +25,27 @@ export const getFirebaseInstance = async () => {
         auth = getAuth(app);
 
         // Agrega un listener para escuchar cambios en el estado de autenticación
-        onAuthStateChanged(auth, (user) => {
+        onAuthStateChanged(auth, async (user) => {
             if (user) {
                 // Usuario ha iniciado sesión
                 console.log("Usuario autenticado:", user);
                 dispatch(navigate('HOME')); // Navega a la pantalla principal
+
+                // Obtener datos adicionales del usuario desde Firestore
+                const { doc, getDoc } = await import('firebase/firestore');
+                const userRef = doc(db, 'users', user.uid);
+                const userDoc = await getDoc(userRef);
+
+                if (userDoc.exists()) {
+                    const userData = userDoc.data();
+                    localStorage.setItem('user', JSON.stringify(userData));
+                    console.log("Nombre de usuario:", userData.username);
+                    dispatch(navigate('HOME')); // Navega a la pantalla principal
+                }
             } else {
                 // Usuario no está autenticado
                 console.log("No hay usuario autenticado.");
+                localStorage.removeItem('user');
                 dispatch(navigate('LOGIN')); // Navega a la pantalla de login
             }
         });
@@ -87,7 +100,18 @@ export const loginUser = async (email: string, password: string) => {
 
         await setPersistence(auth, browserLocalPersistence);
         const userCredential = await signInWithEmailAndPassword(auth, email, password);
-        console.log("Usuario autenticado con éxito");
+
+        // Obtener y almacenar el nombre de usuario
+        const { doc, getDoc } = await import('firebase/firestore');
+        const userRef = doc(db, 'users', userCredential.user.uid);
+        const userDoc = await getDoc(userRef);
+        
+        if (userDoc.exists()) {
+            const userData = userDoc.data();
+            localStorage.setItem('user', JSON.stringify(userData));
+            console.log("Nombre de usuario:", userData.username);
+        }
+        
         dispatch(navigate('HOME'));
 
     } catch (error:any) {
@@ -108,9 +132,18 @@ export const logoutUser = async () => {
         const { auth } = await getFirebaseInstance();
         const { signOut } = await import('firebase/auth');
         await signOut(auth);
+
+        // Limpiar información del usuario al cerrar sesión
+        localStorage.removeItem('user');
         console.log("Usuario ha cerrado sesión.");
         dispatch(navigate('LOGIN'));
     } catch (error) {
         console.error("Error al cerrar sesión:", error);
     }
+};
+
+// Función para obtener el nombre del usuario actualmente autenticado
+export const getCurrentUserName = () => {
+    const user = JSON.parse(localStorage.getItem('user') || '{}');
+    return user?.username || null;
 };
