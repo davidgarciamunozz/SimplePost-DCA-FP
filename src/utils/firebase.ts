@@ -147,6 +147,11 @@ export const getCurrentUserName = () => {
     const user = JSON.parse(localStorage.getItem('user') || '{}');
     return user?.username || null;
 };
+// Función para obtener el id del usuario actualmente autenticado
+export const getCurrentUserId = async () => {
+    const { auth } = await getFirebaseInstance();
+    return auth.currentUser?.uid;
+}
 
 
 // Función para agregar un post a Firestore
@@ -155,27 +160,27 @@ export const addPost = async (post: any) => {
         const { db, auth } = await getFirebaseInstance();
         const { addDoc, collection, serverTimestamp } = await import('firebase/firestore');
 
-        // Obtén el ID del usuario autenticado
         const userId = auth.currentUser?.uid;
 
         if (!userId) {
             throw new Error("Usuario no autenticado");
         }
 
-        // Añade el ID del usuario y la marca de tiempo al post
         const postWithUser = {
             ...post,
             userId,
-            createdAt: serverTimestamp() // Timestamp opcional para saber cuándo fue creado
+            createdAt: serverTimestamp(),
         };
 
         const postsRef = collection(db, 'posts');
-        await addDoc(postsRef, postWithUser);
-
+        const docRef = await addDoc(postsRef, postWithUser); // Obtén la referencia del documento
         console.log("Post agregado con ID de usuario:", userId);
+
+        return docRef.id; // Retorna el ID del documento
 
     } catch (error) {
         console.error("Error al agregar post:", error);
+        throw error;
     }
 };
 

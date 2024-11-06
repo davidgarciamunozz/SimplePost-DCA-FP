@@ -55,9 +55,9 @@ class Post extends HTMLElement {
                 comment: comment.comment
             }));
 
-            // Cargar los likes del post
-            this.likes = await getLikesForPost(this.postId); // Obtener los likes usando la función importada}
-            console.log("Likes cargados:", this.likes);
+            // Cargar los likes del post y si no tiene, asignar un cero 
+            const likesData = await getLikesForPost(this.postId);
+            this.likes = likesData || [];
 
             this.render(); // Vuelve a renderizar con los datos cargados
         } else {

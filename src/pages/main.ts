@@ -3,7 +3,7 @@ import PostCreator from '../components/Post/CreatePost';
 import Navbar from '../components/navigation/NavBar';
 import { appState, dispatch } from "../store/store";
 import { navigate } from '../store/actions';
-import { getFirebaseInstance, getPosts } from '../utils/firebase';
+import { addPost, getCurrentUserId, getFirebaseInstance, getPosts } from '../utils/firebase';
 
 class MainPage extends HTMLElement {
     posts: { post: string; comment: string, author?: string, likes?: number }[] = [];
@@ -15,6 +15,7 @@ class MainPage extends HTMLElement {
 
     async connectedCallback() {
         this.renderLoading(); // Muestra el mensaje de "Cargando..."
+        
 
         const { auth } = await getFirebaseInstance();
         if (auth) {
@@ -48,44 +49,34 @@ class MainPage extends HTMLElement {
     initializePageContent() {
         const container = this.shadowRoot?.querySelector('.container');
 
-        // Crear y añadir el navbar y el creador de posts
         const navbar = new Navbar();
         const postCreator = new PostCreator();
-
+    
         container?.appendChild(navbar);
         container?.appendChild(postCreator);
-
-        // Verifica si los posts están cargados y renderízalos
+    
         this.posts.forEach((post) => {
             this.createPostComponent(post);
         });
-
-
-
-        // Listener para eventos de nuevo post
-        this.shadowRoot?.addEventListener('new-post', (event: Event) => {
+    
+        this.shadowRoot?.addEventListener('new-post', async (event: Event) => {
             const { comment, author } = (event as CustomEvent).detail;
-            this.addPost(comment, author);
+            const newPost = { post: '', comment, author, likes: 0 };
+    
+            try {
+                // Añade el post a Firebase y obtén el ID del documento
+                const postId = await addPost(newPost);
+                newPost.post = postId; // Establece el ID en el objeto `newPost`
+    
+                // Ahora añade el post al DOM con el ID
+                this.createPostComponent(newPost, true); // Inserta el nuevo post al inicio
+            } catch (error) {
+                console.error("Error al agregar el post al DOM:", error);
+            }
         });
     }
 
-    addPost(comment: string, author: string) {
-        const postComponent = new Post();
-        postComponent.setAttribute('comment', comment);
-        postComponent.setAttribute('author', author);
-        postComponent.setAttribute('likes', '0');
-
-        const container = this.shadowRoot?.querySelector('.container');
-        const postCreator = container?.querySelector('post-creator');
-
-        if (postCreator && container) {
-            container.insertBefore(postComponent, postCreator.nextSibling);
-        } else {
-            container?.appendChild(postComponent);
-        }
-    }
-
-    createPostComponent(post: { post: string; comment: string, author?: string, likes?: number }) {
+    createPostComponent(post: { post: string; comment: string, author?: string, likes?: number }, insertAtBeginning = false) {
         const postComponent = new Post();
         postComponent.setAttribute('post', post.post);
         postComponent.setAttribute('comment', post.comment);
@@ -95,9 +86,17 @@ class MainPage extends HTMLElement {
         if (post.likes) {
             postComponent.setAttribute('likes', post.likes.toString());
         }
-
+    
         const container = this.shadowRoot?.querySelector('.container');
-        container?.appendChild(postComponent);
+        const postCreator = container?.querySelector('post-creator'); // Selecciona el `PostCreator`
+    
+        if (insertAtBeginning && postCreator) {
+            // Inserta el nuevo post justo después del `PostCreator`
+            container?.insertBefore(postComponent, postCreator.nextSibling);
+        } else {
+            // Inserta al final si no se especifica lo contrario
+            container?.appendChild(postComponent);
+        }
     }
 
     render() {
