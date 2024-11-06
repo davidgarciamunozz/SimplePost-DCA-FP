@@ -1,3 +1,5 @@
+import { addCommentToPost, getCommentsForPost } from "../../utils/firebase";
+
 export enum PostType {
     POST = 'post',
     COMMENT = 'comment'
@@ -8,9 +10,10 @@ class Post extends HTMLElement {
     private author: string = '';
     private likes: number = 0;
     private comments: string[] = [];
+    private postId: string = ''; // Añade un identificador para el post
 
     static get observedAttributes() {
-        return ['comment', 'author', 'likes'];
+        return ['comment', 'author', 'likes', 'post']; // Observa también el id del post
     }
 
     constructor() {
@@ -20,6 +23,7 @@ class Post extends HTMLElement {
 
     connectedCallback() {
         this.render();
+        this.loadComments();
     }
 
     attributeChangedCallback(name: string, oldValue: string, newValue: string) {
@@ -34,16 +38,41 @@ class Post extends HTMLElement {
                 case 'likes':
                     this.likes = parseInt(newValue, 10);
                     break;
+                case 'post':
+                    this.postId = newValue; // Establece el id del post
+                    break;
             }
             this.render();
-
         }
     }
 
-    // addComment(comment: string) {
-    //     this.comments.push(comment);
-    //     this.render();
-    // }
+
+    async loadComments() {
+        if (this.postId) {
+            const commentsData = await getCommentsForPost(this.postId);
+            // Mapea los comentarios para tener tanto el autor como el comentario
+            this.comments = commentsData.map((comment: any) => ({
+                author: comment.author, // Asumiendo que en Firestore tienes el campo `author`
+                comment: comment.comment
+            }));
+            console.log("Comentarios cargados:", this.comments);
+            
+            this.render(); // Vuelve a renderizar con los comentarios obtenidos
+        } else {
+            console.error("No se ha establecido un ID de post");
+        }
+    }
+
+    async addComment(comment: string) {
+        if (this.postId) {
+            await addCommentToPost(this.postId, comment); // Llama a la función para agregar comentario en Firestore
+    
+            // Después de agregar el comentario, actualiza la lista local de comentarios
+            this.loadComments(); // Recarga los comentarios después de agregar uno nuevo
+        } else {
+            console.error("No se ha establecido un ID de post");
+        }
+    }
 
     render() {
         if (this.shadowRoot) {
@@ -125,20 +154,26 @@ class Post extends HTMLElement {
                         </button>
                     </div>
                     <div class="comments">
-                        ${this.comments.map(comment => `<div class="comment">${comment}</div>`).join('')}
+                        ${this.comments.map((comment: any) => `
+                            <div class="comment">
+                                <span class="author">${comment.author}:</span> ${comment.comment}
+                            </div>
+                        `).join('')}
                     </div>
                     <input type="text" class="comment-input" placeholder="Escribe un comentario...">
                 </div>
             `;
 
-            // const commentInput = this.shadowRoot.querySelector('.comment-input');
-            // commentInput?.addEventListener('keypress', (event: KeyboardEvent) => {
-            //     if (event.key === 'Enter') {
-            //         const input = event.target as HTMLInputElement;
-            //         this.addComment(input.value);
-            //         input.value = '';
-            //     }
-            // });
+            const commentInput = this.shadowRoot?.querySelector('.comment-input') as HTMLInputElement;
+
+            commentInput?.addEventListener('keypress', (event) => {
+                if ((event as KeyboardEvent).key === 'Enter') {
+                    const input = event.target as HTMLInputElement;
+                    this.addComment(input.value);
+                    input.value = '';
+                }
+            });
+
         }
     }
 }

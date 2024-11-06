@@ -40,7 +40,6 @@ class MainPage extends HTMLElement {
                 author: post.author,
                 likes: post.likes || 0,
             }));
-            console.log('Posts cargados:', this.posts);
         } catch (error) {
             console.error("Error al cargar posts:", error);
         }
@@ -55,7 +54,7 @@ class MainPage extends HTMLElement {
 
         container?.appendChild(navbar);
         container?.appendChild(postCreator);
-        
+
         // Verifica si los posts están cargados y renderízalos
         this.posts.forEach((post) => {
             this.createPostComponent(post);

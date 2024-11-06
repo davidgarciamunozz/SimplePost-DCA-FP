@@ -179,6 +179,56 @@ export const addPost = async (post: any) => {
     }
 };
 
+// Función para agregar un comentario a un post en Firestore
+export const addCommentToPost = async (postId: string, comment: string) => {
+    try {
+        const { db, auth } = await getFirebaseInstance();
+        const { doc, updateDoc, arrayUnion } = await import('firebase/firestore');
+
+        // Obtén el ID del usuario autenticado
+        const userId = auth.currentUser?.uid;
+
+        //Obtener el nombre del usuario
+        const user = JSON.parse(localStorage.getItem('user') || '{}');
+        const author = user?.username || null;
+
+        if (!userId) {
+            throw new Error("Usuario no autenticado");
+        }
+
+        const postRef = doc(db, 'posts', postId);
+        await updateDoc(postRef, {
+            comments: arrayUnion({ userId,author, comment })
+        });
+
+        console.log("Comentario agregado al post:", postId , 'autor:', author);
+
+    } catch (error) {
+        console.error("Error al agregar comentario:", error);
+    }
+};
+
+// Función para obtener comentarios de un post en Firestore
+export const getCommentsForPost = async (postId: string) => {
+    try {
+        const { db } = await getFirebaseInstance();
+        const { doc, getDoc } = await import('firebase/firestore');
+
+        const postRef = doc(db, 'posts', postId);
+        const postDoc = await getDoc(postRef);
+
+        if (postDoc.exists()) {
+            const postData = postDoc.data();
+            return postData.comments || [];
+        }
+
+        return {};
+    } catch (error) {
+        console.error("Error al obtener comentarios:", error);
+        return {};
+    }
+};
+
 // Función para obtener todos los posts de Firestore
 export const getPosts = async () => {
     try {
