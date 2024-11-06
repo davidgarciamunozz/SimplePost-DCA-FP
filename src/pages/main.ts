@@ -1,4 +1,4 @@
-import Post, { PostType } from '../components/Post/Post';
+import Post from '../components/Post/Post';
 import PostCreator from '../components/Post/CreatePost';
 import Navbar from '../components/navigation/NavBar';
 import { appState, dispatch } from "../store/store";

@@ -229,6 +229,64 @@ export const getCommentsForPost = async (postId: string) => {
     }
 };
 
+//función para aunmentar likes de un post
+export const likePost = async (postId: string, userId: string) => {
+    try {
+        const { db } = await getFirebaseInstance();
+        const { doc, updateDoc, arrayUnion } = await import('firebase/firestore');
+
+        const postRef = doc(db, 'posts', postId);
+        
+        // Añadimos el userId al array de 'likedBy' para evitar que se agregue múltiples veces el like por el mismo usuario
+        await updateDoc(postRef, {
+            likes: arrayUnion(userId) // Usamos arrayUnion para asegurar que el like de cada usuario sea único
+        });
+
+        console.log(`Post ${postId} liked by user ${userId}`);
+    } catch (error) {
+        console.error("Error al dar like al post:", error);
+    }
+};
+
+// Función para disminuir el like de un post
+export const removeLike = async (postId: string, userId: string) => {
+    try {
+        const { db } = await getFirebaseInstance();
+        const { doc, updateDoc, arrayRemove } = await import('firebase/firestore');
+
+        const postRef = doc(db, 'posts', postId);
+
+        // Eliminamos el userId del array de 'likedBy' para quitar su like
+        await updateDoc(postRef, {
+            likes: arrayRemove(userId) // Usamos arrayRemove para quitar un like del usuario
+        });
+
+        console.log(`Like removed from post ${postId} by user ${userId}`);
+    } catch (error) {
+        console.error("Error al quitar el like al post:", error);
+    }
+};
+//función para obtener los likes de un post
+export const getLikesForPost = async (postId: string) => {
+    try {
+        const { db } = await getFirebaseInstance();
+        const { doc, getDoc } = await import('firebase/firestore');
+
+        const postRef = doc(db, 'posts', postId);
+        const postDoc = await getDoc(postRef);
+
+        if (postDoc.exists()) {
+            const postData = postDoc.data();
+            return postData.likes || [];
+        }
+
+        return {};
+    } catch (error) {
+        console.error("Error al obtener likes:", error);
+        return {};
+    }
+};
+
 // Función para obtener todos los posts de Firestore
 export const getPosts = async () => {
     try {

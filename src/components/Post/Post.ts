@@ -1,14 +1,9 @@
-import { addCommentToPost, getCommentsForPost } from "../../utils/firebase";
-
-export enum PostType {
-    POST = 'post',
-    COMMENT = 'comment'
-}
+import { addCommentToPost, getCommentsForPost, getLikesForPost, likePost, removeLike } from "../../utils/firebase";
 
 class Post extends HTMLElement {
     private comment: string = '';
     private author: string = '';
-    private likes: number = 0;
+    private likes: string[] = [];
     private comments: string[] = [];
     private postId: string = ''; // Añade un identificador para el post
 
@@ -21,9 +16,9 @@ class Post extends HTMLElement {
         this.attachShadow({ mode: 'open' });
     }
 
-    connectedCallback() {
+    async connectedCallback() {
         this.render();
-        this.loadComments();
+        await this.loadPostData(); // Cargar datos del post (likes y comentarios)
     }
 
     attributeChangedCallback(name: string, oldValue: string, newValue: string) {
@@ -36,7 +31,12 @@ class Post extends HTMLElement {
                     this.author = newValue;
                     break;
                 case 'likes':
-                    this.likes = parseInt(newValue, 10);
+                    // Convertir newValue a un array de strings
+                    try {
+                        this.likes = JSON.parse(newValue); // Parsear el valor a un array de strings
+                    } catch (error) {
+                        this.likes = []; // Si no se puede parsear, asignar un array vacío
+                    }
                     break;
                 case 'post':
                     this.postId = newValue; // Establece el id del post
@@ -46,18 +46,20 @@ class Post extends HTMLElement {
         }
     }
 
-
-    async loadComments() {
+    async loadPostData() {
         if (this.postId) {
+            // Cargar los comentarios del post
             const commentsData = await getCommentsForPost(this.postId);
-            // Mapea los comentarios para tener tanto el autor como el comentario
             this.comments = commentsData.map((comment: any) => ({
-                author: comment.author, // Asumiendo que en Firestore tienes el campo `author`
+                author: comment.author,
                 comment: comment.comment
             }));
-            console.log("Comentarios cargados:", this.comments);
-            
-            this.render(); // Vuelve a renderizar con los comentarios obtenidos
+
+            // Cargar los likes del post
+            this.likes = await getLikesForPost(this.postId); // Obtener los likes usando la función importada}
+            console.log("Likes cargados:", this.likes);
+
+            this.render(); // Vuelve a renderizar con los datos cargados
         } else {
             console.error("No se ha establecido un ID de post");
         }
@@ -68,9 +70,27 @@ class Post extends HTMLElement {
             await addCommentToPost(this.postId, comment); // Llama a la función para agregar comentario en Firestore
     
             // Después de agregar el comentario, actualiza la lista local de comentarios
-            this.loadComments(); // Recarga los comentarios después de agregar uno nuevo
+            this.loadPostData(); // Recarga los comentarios y likes después de agregar uno nuevo
         } else {
             console.error("No se ha establecido un ID de post");
+        }
+    }
+
+    // Función para manejar el evento de like
+    private toggleLike() {
+        const userCredential = localStorage.getItem('user');
+        const userId = userCredential ? JSON.parse(userCredential).username : null;
+        if (userId) {
+            if (this.likes.includes(userId)) {
+                removeLike(this.postId, userId); // Si ya le dio like, lo quita
+                this.likes = this.likes.filter((like) => like !== userId);
+            } else {
+                likePost(this.postId, userId); // Si no, lo agrega
+                this.likes.push(userId);
+            }
+            this.render(); // Vuelve a renderizar después de agregar/quitar like
+        } else {
+            alert('Debes iniciar sesión para dar like');
         }
     }
 
@@ -146,8 +166,8 @@ class Post extends HTMLElement {
                     </div>
                     <div class="comment">${this.comment}</div>
                     <div class="actions">
-                        <button class="action-button">
-                            👍 ${this.likes}
+                        <button class="action-button" id="like-button">
+                            👍 ${this.likes.length}
                         </button>
                         <button class="action-button">
                             💬 ${this.comments.length}
@@ -164,6 +184,9 @@ class Post extends HTMLElement {
                 </div>
             `;
 
+            const likeButton = this.shadowRoot.getElementById('like-button');
+            likeButton?.addEventListener('click', this.toggleLike.bind(this));
+
             const commentInput = this.shadowRoot?.querySelector('.comment-input') as HTMLInputElement;
 
             commentInput?.addEventListener('keypress', (event) => {
@@ -173,7 +196,6 @@ class Post extends HTMLElement {
                     input.value = '';
                 }
             });
-
         }
     }
 }
