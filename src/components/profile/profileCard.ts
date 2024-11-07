@@ -1,4 +1,4 @@
-import { getCurrentUserName } from "../../utils/firebase";
+import { getCurrentUserCredentials, getCurrentUserName } from "../../utils/firebase";
 
 class ProfileCard extends HTMLElement {
     private userData: {
@@ -14,11 +14,13 @@ class ProfileCard extends HTMLElement {
     }
 
     async connectedCallback() {
+        const userCredentials = await getCurrentUserCredentials();
+        console.log('Credenciales del usuario:', userCredentials);
         // Simular obtención de datos del usuario
         this.userData = {
             name: await getCurrentUserName(),
             bio: "Entusiasta de la tecnologia y amante de los gatos",
-            email: "juan.perez@email.com",
+            email: userCredentials?.email,
             location: "Madrid, España"
         };
         this.render();

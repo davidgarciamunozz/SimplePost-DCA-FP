@@ -1,9 +1,9 @@
 import Post from '../components/Post/Post';
 import Navbar from '../components/navigation/NavBar';
 import ProfileCard from '../components/profile/profileCard';
-import { appState, dispatch } from "../store/store";
+import {dispatch } from "../store/store";
 import { navigate } from '../store/actions';
-import { getCurrentUserId, getFirebaseInstance, getPosts } from '../utils/firebase';
+import { getCurrentUserId, getFirebaseInstance, getPostsByUser } from '../utils/firebase';
 
 class ProfilePage extends HTMLElement {
     posts: { post: string; comment: string, author?: string, likes?: number }[] = [];
@@ -33,8 +33,9 @@ class ProfilePage extends HTMLElement {
     }
 
     async loadPostsFromFirestore() {
+        const userId = await getCurrentUserId();
         try {
-            const fetchedPosts = await getPosts(); // Obtener los posts de Firestore
+            const fetchedPosts = await getPostsByUser(userId); // Obtener los posts de Firestore
             this.posts = fetchedPosts.map(post => ({
                 post: post.id,
                 comment: post.comment,
@@ -56,9 +57,21 @@ class ProfilePage extends HTMLElement {
         container?.appendChild(navbar);
         container?.appendChild(profileCard);
     
-        this.posts.forEach((post) => {
-            this.createPostComponent(post);
-        });
+        // Verificar si el usuario tiene posts
+        if (this.posts.length === 0) {
+            // Renderizar un mensaje invitando a crear el primer post
+            const noPostsMessage = document.createElement('p');
+            noPostsMessage.textContent = "Aún no tienes posts. ¡Crea tu primer post y comparte tus pensamientos!";
+            noPostsMessage.style.textAlign = 'center';
+            noPostsMessage.style.color = '#777';
+            noPostsMessage.style.marginTop = '20px';
+            container?.appendChild(noPostsMessage);
+        } else {
+            // Renderizar los posts si existen
+            this.posts.forEach((post) => {
+                this.createPostComponent(post);
+            });
+        }
     }
 
     createPostComponent(post: { post: string; comment: string, author?: string, likes?: number }, insertAtBeginning = false) {

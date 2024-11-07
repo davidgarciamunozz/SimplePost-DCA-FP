@@ -68,6 +68,7 @@ class Navbar extends HTMLElement {
                         font-weight: bold;
                         color: #333;
                         text-decoration: none;
+                        cursor: pointer;
                     }
                     .logo-icon {
                         width: 24px;
@@ -164,6 +165,12 @@ class Navbar extends HTMLElement {
             const logoutButton = this.shadowRoot.querySelector('#cerrar-sesion');
             logoutButton?.addEventListener('click', async () => {
                 await logoutUser();
+            });
+
+            // Evento para cambiar de pantalla al clickear el logo
+            const logoButton = this.shadowRoot.querySelector('.logo');
+            logoButton?.addEventListener('click', () => {
+                dispatch(navigate('HOME'));
             });
         
 

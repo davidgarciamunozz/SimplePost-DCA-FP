@@ -29,7 +29,7 @@ export const getFirebaseInstance = async () => {
             if (user) {
                 // Usuario ha iniciado sesión
                 console.log("Usuario autenticado:", user);
-                dispatch(navigate('HOME')); // Navega a la pantalla principal
+                // dispatch(navigate('HOME')); // Navega a la pantalla principal
 
                 // Obtener datos adicionales del usuario desde Firestore
                 const { doc, getDoc } = await import('firebase/firestore');
@@ -40,7 +40,7 @@ export const getFirebaseInstance = async () => {
                     const userData = userDoc.data();
                     localStorage.setItem('user', JSON.stringify(userData));
                     console.log("Nombre de usuario:", userData.username);
-                    dispatch(navigate('HOME')); // Navega a la pantalla principal
+                    // dispatch(navigate('HOME')); // Navega a la pantalla principal
                 }
             } else {
                 // Usuario no está autenticado
@@ -153,6 +153,11 @@ export const getCurrentUserId = async () => {
     return auth.currentUser?.uid;
 }
 
+// Función para obtener todos los datos del usuario actualmente autenticado
+export const getCurrentUserCredentials = async () => {
+    const { auth } = await getFirebaseInstance();
+    return auth.currentUser;
+};
 
 // Función para agregar un post a Firestore
 export const addPost = async (post: any) => {
@@ -304,6 +309,23 @@ export const getPosts = async () => {
         return snapshot.docs.map((doc: any) => ({ id: doc.id, ...doc.data() }));
     } catch (error) {
         console.error("Error al obtener posts:", error);
+        return [];
+    }
+};
+
+// Función para obtener los posts de un usuario específico
+export const getPostsByUser = async (userId: string) => {
+    try {
+        const { db } = await getFirebaseInstance();
+        const { collection, query, where, getDocs } = await import('firebase/firestore');
+
+        const postsRef = collection(db, 'posts');
+        const q = query(postsRef, where('userId', '==', userId));
+        const snapshot = await getDocs(q);
+
+        return snapshot.docs.map((doc: any) => ({ id: doc.id, ...doc.data() }));
+    } catch (error) {
+        console.error("Error al obtener posts por usuario:", error);
         return [];
     }
 };
