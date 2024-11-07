@@ -3,6 +3,7 @@ import './pages/main';
 import './pages/landing';
 import './pages/register';
 import './pages/login';
+import './pages/profile';
 //importar el estado global
 import { appState, dispatch } from "./store/store";
 //importar observador
@@ -42,6 +43,10 @@ class AppContainer extends HTMLElement {
             case 'LOGIN':
                 const LoginPage = document.createElement('login-page');
                 this.shadowRoot?.appendChild(LoginPage);
+                break;
+            case 'PROFILE':
+                const ProfilePage = document.createElement('profile-page');
+                this.shadowRoot?.appendChild(ProfilePage);
                 break;
 
             default:
