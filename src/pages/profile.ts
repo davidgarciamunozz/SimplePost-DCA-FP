@@ -1,12 +1,14 @@
 import Post from '../components/Post/Post';
 import Navbar from '../components/navigation/NavBar';
 import ProfileCard from '../components/profile/profileCard';
+import ProfileEditor from '../components/profile/editProfile';
 import {dispatch } from "../store/store";
 import { navigate } from '../store/actions';
-import { getCurrentUserId, getFirebaseInstance, getPostsByUser } from '../utils/firebase';
+import { getCurrentUserId, getFirebaseInstance, getPostsByUser, updateUser } from '../utils/firebase';
 
 class ProfilePage extends HTMLElement {
     posts: { post: string; comment: string, author?: string, likes?: number }[] = [];
+    isEditing: boolean = false;
 
     constructor() {
         super();
@@ -48,14 +50,28 @@ class ProfilePage extends HTMLElement {
         }
     }
 
-    initializePageContent() {
+    async initializePageContent() {
+        const userId = await getCurrentUserId();
+        
         const container = this.shadowRoot?.querySelector('.container');
 
         const navbar = new Navbar();
         const profileCard = new ProfileCard();
+        const profileEditor = new ProfileEditor();
     
         container?.appendChild(navbar);
         container?.appendChild(profileCard);
+
+        // Escuchar el evento de edición desde ProfileCard
+        profileCard.addEventListener('profile-updated', (event: Event) => {
+            const customEvent = event as CustomEvent;
+            // Actualizar datos del perfil en firebase
+
+            updateUser(userId, customEvent.detail);
+        });
+        profileCard.addEventListener('edit-profile', () => {
+            container?.appendChild(profileEditor); // Mostrar el editor de perfil
+        });
     
         // Verificar si el usuario tiene posts
         if (this.posts.length === 0) {

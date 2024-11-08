@@ -329,3 +329,54 @@ export const getPostsByUser = async (userId: string) => {
         return [];
     }
 };
+
+// Funcion para actualizar datos del usuario
+export const updateUser = async (userId: string, data: any) => {
+    try {
+        const { db } = await getFirebaseInstance();
+        const { doc, updateDoc } = await import('firebase/firestore');
+
+        const userRef = doc(db, 'users', userId);
+        await updateDoc(userRef, data);
+
+        console.log("Datos de usuario actualizados:", data);
+    } catch (error) {
+        console.error("Error al actualizar datos de usuario:", error);
+    }
+};
+
+// Función para setear la imagen de perfil del usuario, en Firestore
+export const setUserImage = async (userId: string, imageUrl: string) => {
+    try {
+        const { db } = await getFirebaseInstance();
+        const { doc, updateDoc } = await import('firebase/firestore');
+
+        const userRef = doc(db, 'users', userId);
+        await updateDoc(userRef, { imageUrl });
+
+        console.log("Imagen de usuario actualizada:", imageUrl);
+    } catch (error) {
+        console.error("Error al actualizar imagen de usuario:", error);
+    }
+};
+// Función para obtener la imagen de perfil del usuario
+export const getImage = async (userId: string) => {
+    try {
+        const { db } = await getFirebaseInstance();
+        const { doc, getDoc } = await import('firebase/firestore');
+
+        const userRef = doc(db, 'users', userId);
+        const userDoc = await getDoc(userRef);
+
+        if (userDoc.exists()) {
+            const userData = userDoc.data();
+            return userData.imageUrl || null;
+        }
+
+        return null;
+    } catch (error) {
+        console.error("Error al obtener imagen de usuario:", error);
+        return null;
+    }
+};
+

@@ -1,4 +1,4 @@
-import { getCurrentUserCredentials, getCurrentUserName } from "../../utils/firebase";
+import { getCurrentUserCredentials, getCurrentUserId, getCurrentUserName, getImage } from "../../utils/firebase";
 
 class ProfileCard extends HTMLElement {
     private userData: {
@@ -8,6 +8,8 @@ class ProfileCard extends HTMLElement {
         location: string;
     } | null = null;
 
+    private avatarUrl: string | null = null;
+
     constructor() {
         super();
         this.attachShadow({ mode: 'open' });
@@ -15,7 +17,17 @@ class ProfileCard extends HTMLElement {
 
     async connectedCallback() {
         const userCredentials = await getCurrentUserCredentials();
+        const userId = await getCurrentUserId();
         console.log('Credenciales del usuario:', userCredentials);
+        try {
+            // Agregar un timestamp a la URL de la imagen para evitar caché
+            const originalAvatarUrl = await getImage(userId);
+            this.avatarUrl = originalAvatarUrl ? originalAvatarUrl : null;
+            console.log('Imagen del usuario:', this.avatarUrl);
+        } catch (error) {
+            console.error("Error al obtener la imagen del usuario:", error);
+            this.avatarUrl = null; // Dejarlo como nulo si no se obtiene imagen
+        }
         // Simular obtención de datos del usuario
         this.userData = {
             name: await getCurrentUserName(),
@@ -26,6 +38,7 @@ class ProfileCard extends HTMLElement {
         this.render();
         this.setupEventListeners();
     }
+
 
     render() {
         if (this.shadowRoot) {
@@ -50,6 +63,9 @@ class ProfileCard extends HTMLElement {
                         height: 80px;
                         background-color: #e1e1e1;
                         border-radius: 50%;
+                        background-image: url('${this.avatarUrl || "https://via.placeholder.com/80"}'); /* Imagen por defecto */
+                        background-size: cover;
+                        background-position: center;
                     }
                     .profile-info {
                         flex-grow: 1;
@@ -128,9 +144,13 @@ class ProfileCard extends HTMLElement {
     setupEventListeners() {
         const editButton = this.shadowRoot?.querySelector('.edit-button');
         editButton?.addEventListener('click', () => {
-            // Implementar lógica de edición aquí
-            console.log('Editar perfil clicked');
+        console.log('Editar perfil');
+        const editEvent = new CustomEvent('edit-profile', {
+            bubbles: true,
+            composed: true,
         });
+        this.dispatchEvent(editEvent);
+    });
     }
 }
 
