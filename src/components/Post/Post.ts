@@ -6,9 +6,10 @@ class Post extends HTMLElement {
     private likes: string[] = [];
     private comments: string[] = [];
     private postId: string = ''; // Añade un identificador para el post
+    private imageURL: string = ''; // URL de la imagen
 
     static get observedAttributes() {
-        return ['comment', 'author', 'likes', 'post']; // Observa también el id del post
+        return ['comment', 'author', 'likes', 'post', 'image-url']; // Observa también el id del post
     }
 
     constructor() {
@@ -31,15 +32,17 @@ class Post extends HTMLElement {
                     this.author = newValue;
                     break;
                 case 'likes':
-                    // Convertir newValue a un array de strings
                     try {
-                        this.likes = JSON.parse(newValue); // Parsear el valor a un array de strings
+                        this.likes = JSON.parse(newValue);
                     } catch (error) {
-                        this.likes = []; // Si no se puede parsear, asignar un array vacío
+                        this.likes = [];
                     }
                     break;
                 case 'post':
-                    this.postId = newValue; // Establece el id del post
+                    this.postId = newValue;
+                    break;
+                case 'image-url':
+                    this.imageURL = newValue; // Establece la URL de la imagen
                     break;
             }
             this.render();
@@ -158,6 +161,12 @@ class Post extends HTMLElement {
                         border: 1px solid #e1e1e1;
                         border-radius: 4px;
                     }
+                        .post-image {
+                    max-width: 100%;
+                    height: auto;
+                    margin-top: 12px;
+                    border-radius: 8px;
+                }
                 </style>
                 <div class="post">
                     <div class="post-header">
@@ -165,6 +174,7 @@ class Post extends HTMLElement {
                         <span class="author">${this.author}</span>
                     </div>
                     <div class="comment">${this.comment}</div>
+                       ${this.imageURL ? `<img src="${this.imageURL}" class="post-image" />` : ''}
                     <div class="actions">
                         <button class="action-button" id="like-button">
                             👍 ${this.likes.length}

@@ -22,3 +22,23 @@ export async function uploadprofileImage(file: File, userId: string) {
         throw error;
     }
 }
+
+// Crear una funcion que reiba una imagen y la suba a Cloudinary
+export async function uploadImage(file: File) {
+    const formData = new FormData();
+    formData.append('file', file);
+    formData.append('upload_preset', UPLOAD_PRESET);
+
+    try {
+        const response = await fetch(CLOUDINARY_URL, {
+            method: 'POST',
+            body: formData,
+        });
+        const data = await response.json();
+        console.log('Imagen subida:', data);
+        return data; // Devolver los datos completos, incluyendo `secure_url`
+    } catch (error) {
+        console.error('Error al subir la imagen:', error);
+        throw error;
+    }
+}

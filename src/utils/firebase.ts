@@ -379,4 +379,17 @@ export const getImage = async (userId: string) => {
         return null;
     }
 };
+// Función para subir la imagen del post que esta en cloudinary a firestore
+export const uploadPostImage = async (postId: string, imageUrl: string) => {
+    try {
+        const { db } = await getFirebaseInstance();
+        const { doc, updateDoc } = await import('firebase/firestore');
 
+        const postRef = doc(db, 'posts', postId);
+        await updateDoc(postRef, { imageUrl });
+
+        console.log("Imagen de post actualizada:", imageUrl);
+    } catch (error) {
+        console.error("Error al actualizar imagen de post:", error);
+    }
+};

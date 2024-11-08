@@ -6,7 +6,7 @@ import { navigate } from '../store/actions';
 import { addPost, getFirebaseInstance, getPosts } from '../utils/firebase';
 
 class MainPage extends HTMLElement {
-    posts: { post: string; comment: string, author?: string, likes?: number }[] = [];
+    posts: { post: string; comment: string, author?: string, likes?: number, imageURL : string }[] = [];
 
     constructor() {
         super();
@@ -40,6 +40,7 @@ class MainPage extends HTMLElement {
                 comment: post.comment,
                 author: post.author,
                 likes: post.likes || 0,
+                imageURL: post.imageURL || ''
             }));
             console.log('Posts cargados:', this.posts);
         } catch (error) {
@@ -61,8 +62,8 @@ class MainPage extends HTMLElement {
         });
     
         this.shadowRoot?.addEventListener('new-post', async (event: Event) => {
-            const { comment, author } = (event as CustomEvent).detail;
-            const newPost = { post: '', comment, author, likes: 0 };
+            const { comment, author, imageURL} = (event as CustomEvent).detail;
+            const newPost = { post: '', comment, author, likes: 0, imageURL };
     
             try {
                 // Añade el post a Firebase y obtén el ID del documento
@@ -77,7 +78,7 @@ class MainPage extends HTMLElement {
         });
     }
 
-    createPostComponent(post: { post: string; comment: string, author?: string, likes?: number }, insertAtBeginning = false) {
+    createPostComponent(post: { post: string; comment: string, author?: string, likes?: number, imageURL?: string }, insertAtBeginning = false) {
         const postComponent = new Post();
         postComponent.setAttribute('post', post.post);
         postComponent.setAttribute('comment', post.comment);
@@ -86,6 +87,9 @@ class MainPage extends HTMLElement {
         }
         if (post.likes) {
             postComponent.setAttribute('likes', post.likes.toString());
+        }
+        if (post.imageURL) {
+            postComponent.setAttribute('image-url', post.imageURL);
         }
     
         const container = this.shadowRoot?.querySelector('.container');

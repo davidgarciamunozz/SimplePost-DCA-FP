@@ -38,11 +38,14 @@ class ProfilePage extends HTMLElement {
         const userId = await getCurrentUserId();
         try {
             const fetchedPosts = await getPostsByUser(userId); // Obtener los posts de Firestore
+            console.log('Posts cargados:', fetchedPosts);
             this.posts = fetchedPosts.map(post => ({
                 post: post.id,
                 comment: post.comment,
                 author: post.author,
                 likes: post.likes || 0,
+                imageURL: post.imageURL || ''
+
             }));
             console.log('Posts cargados:', this.posts);
         } catch (error) {
@@ -90,7 +93,7 @@ class ProfilePage extends HTMLElement {
         }
     }
 
-    createPostComponent(post: { post: string; comment: string, author?: string, likes?: number }, insertAtBeginning = false) {
+    createPostComponent(post: { post: string; comment: string, author?: string, likes?: number , imageURL?: string}, insertAtBeginning = false) {
         const postComponent = new Post();
         postComponent.setAttribute('post', post.post);
         postComponent.setAttribute('comment', post.comment);
@@ -99,6 +102,9 @@ class ProfilePage extends HTMLElement {
         }
         if (post.likes) {
             postComponent.setAttribute('likes', post.likes.toString());
+        }
+        if (post.imageURL) {
+            postComponent.setAttribute('image-url', post.imageURL);
         }
     
         const container = this.shadowRoot?.querySelector('.container');
