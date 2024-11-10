@@ -6,10 +6,15 @@ export const reducer = (currentAction: any, currentState: any) => {
                 ...currentState,
                 screen: payload
             }
-        case 'SET_USER':
+        case 'SET_POSTS':
             return {
                 ...currentState,
-                user: payload
+                posts: payload
+            }
+        case 'SET_USER_POSTS':
+            return {
+                ...currentState,
+                userPosts: payload
             }
         default:
             return currentState

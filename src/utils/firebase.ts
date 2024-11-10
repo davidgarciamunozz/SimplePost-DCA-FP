@@ -305,7 +305,7 @@ export const getPosts = async () => {
 
         const postsRef = collection(db, 'posts');
         const snapshot = await getDocs(postsRef);
-
+        
         return snapshot.docs.map((doc: any) => ({ id: doc.id, ...doc.data() }));
     } catch (error) {
         console.error("Error al obtener posts:", error);

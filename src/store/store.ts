@@ -4,7 +4,8 @@ import {get, set} from '../utils/storage'
 
 //initial State
 const initialState = {
-    screen: 'HOME'
+    screen: 'HOME',
+    posts : [],
 }
 
 // Global State
