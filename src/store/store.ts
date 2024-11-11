@@ -4,7 +4,7 @@ import {get, set} from '../utils/storage'
 
 //initial State
 const initialState = {
-    screen: 'LANDING',
+    screen: 'LOGIN',
     posts : [],
 }
 
