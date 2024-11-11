@@ -1,3 +1,6 @@
+# Ignorar la carpeta de distribución
+dist/
+
 # Ignorar la carpeta de dependencias
 node_modules/
 
