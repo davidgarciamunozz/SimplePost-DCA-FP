@@ -48,13 +48,17 @@ class HeroLanding extends HTMLElement {
             <section class="hero">
                 <h1>Comparte tus pensamientos en SimplePost</h1>
                 <p>Una plataforma simple para compartir ideas, reaccionar y comentar. Conéctate de manera sencilla.</p>
-                <a href="#" class="button">Únete ahora</a>
+                <a href="#" class="button" id="register">Únete ahora</a>
                 <a href="#" id="go-to-main" class="button secondary">Explora posts</a>
             </section>
             `
             const goToMainButton = this.shadowRoot.querySelector('#go-to-main');
             goToMainButton?.addEventListener('click', () => {
                 dispatch(navigate('HOME'));
+            });
+            const registerButton = this.shadowRoot.querySelector('#register');
+            registerButton?.addEventListener('click', () => {
+                dispatch(navigate('REGISTER'));
             });
         }
 }
