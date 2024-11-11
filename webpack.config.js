@@ -18,7 +18,7 @@ module.exports = {
     output: {
         filename: 'bundle.js',
         path: path.resolve(__dirname,'dist'),
-        publicPath: '/dist/',
+        publicPath: '/SimplePost-DCA-FP/dist/',
     },
     cache : {
         type: 'filesystem',
