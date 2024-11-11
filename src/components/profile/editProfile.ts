@@ -1,17 +1,44 @@
-import { getCurrentUserId, setUserImage } from "../../utils/firebase";
+import { navigate } from "../../store/actions";
+import { dispatch } from "../../store/store";
+import { getCurrentUserBio, getCurrentUserCredentials, getCurrentUserId, getCurrentUserLocation, getCurrentUserName, getImage, setUserImage, updateUser } from "../../utils/firebase";
 import { uploadprofileImage } from "../../utils/storageImages";
 
 class ProfileEditor extends HTMLElement {
     private form: HTMLFormElement | null = null;
     private imageInput: HTMLInputElement | null = null;
     private avatarPreview: HTMLDivElement | null = null;
+    private avatarUrl: string | null = null;
+    private userData: {
+        name: string;
+        bio: string;
+        email: string;
+        location: string;
+    } | null = null;
 
     constructor() {
         super();
         this.attachShadow({ mode: 'open' });
     }
 
-    connectedCallback() {
+    async connectedCallback() {
+        const userCredentials = await getCurrentUserCredentials();
+        const userId = await getCurrentUserId();
+
+        try {
+            const originalAvatarUrl = await getImage(userId);
+            this.avatarUrl = originalAvatarUrl ? originalAvatarUrl : null;
+        } catch (error) {
+            console.error("Error al obtener la imagen del usuario:", error);
+            this.avatarUrl = null; // Dejarlo como nulo si no se obtiene imagen
+        }
+        // Simular obtención de datos del usuario
+        this.userData = {
+            name: await getCurrentUserName(),
+            bio: await getCurrentUserBio() || "Hola, soy nuevo en la comunidad",
+            email: userCredentials?.email,
+            location: await getCurrentUserLocation() || "En algún lugar del mundo",
+        };
+
         this.render();
         this.setupEventListeners();
     }
@@ -117,9 +144,10 @@ class ProfileEditor extends HTMLElement {
                     <form id="profileForm">
                         <div class="avatar-section">
                             <div class="avatar-preview">
+                             ${this.avatarUrl ? `<img src="${this.avatarUrl}" style="width: 100%; height: 100%; border-radius: 50%; object-fit: cover;">` : `
                                 <svg width="40" height="40" viewBox="0 0 24 24" fill="#666">
                                     <path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/>
-                                </svg>
+                                </svg>`}
                             </div>
                             <input type="file" id="imageInput" accept="image/*">
                             <button type="button" class="change-photo-btn">
@@ -129,22 +157,22 @@ class ProfileEditor extends HTMLElement {
 
                         <div class="form-group">
                             <label for="name">Nombre</label>
-                            <input type="text" id="name" value="Juan Pérez" required>
+                            <input type="text" id="name" name="name" value="${this.userData?.name || ''}" required>
                         </div>
 
                         <div class="form-group">
                             <label for="email">Correo electrónico</label>
-                            <input type="email" id="email" value="juan.perez@email.com" required>
+                            <input type="email" id="email" name="email" value="${this.userData?.email || ''}" required>
                         </div>
 
                         <div class="form-group">
                             <label for="bio">Biografía</label>
-                            <textarea id="bio" required>Entusiasta de la tecnologia y amante de los gatos</textarea>
+                            <textarea id="bio" name="bio" required>${this.userData?.bio || ''}</textarea>
                         </div>
 
                         <div class="form-group">
                             <label for="location">Ubicación</label>
-                            <input type="text" id="location" value="Madrid, España" required>
+                            <input type="text" id="location" name="location" value="${this.userData?.location || ''}" required>
                         </div>
 
                         <button type="submit" class="save-button">Guardar cambios</button>
@@ -199,13 +227,16 @@ class ProfileEditor extends HTMLElement {
         
         const formData = new FormData(event.target as HTMLFormElement);
         const userData = {
-            name: formData.get('name'),
+            username: formData.get('name'),
             email: formData.get('email'),
             bio: formData.get('bio'),
             location: formData.get('location')
         };
 
         try {
+            const userId = await getCurrentUserId();
+
+            await updateUser(userId, userData);
             // Aquí iría la lógica para guardar los datos
             console.log('Datos a guardar:', userData);
             
@@ -214,9 +245,8 @@ class ProfileEditor extends HTMLElement {
                 detail: userData,
                 bubbles: true
             });
-            this.dispatchEvent(updateEvent);
-            
             alert('Perfil actualizado correctamente');
+            this.dispatchEvent(updateEvent);
         } catch (error) {
             console.error('Error al guardar los cambios:', error);
             alert('Error al guardar los cambios. Por favor, intenta de nuevo.');

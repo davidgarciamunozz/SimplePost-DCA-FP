@@ -2,7 +2,7 @@ import Post from '../components/Post/Post';
 import Navbar from '../components/navigation/NavBar';
 import ProfileCard from '../components/profile/profileCard';
 import ProfileEditor from '../components/profile/editProfile';
-import {dispatch } from "../store/store";
+import { dispatch } from "../store/store";
 import { navigate } from '../store/actions';
 import { getCurrentUserId, getFirebaseInstance, getPostsByUser, updateUser } from '../utils/firebase';
 
@@ -17,7 +17,6 @@ class ProfilePage extends HTMLElement {
 
     async connectedCallback() {
         this.renderLoading(); // Muestra el mensaje de "Cargando..."
-        
 
         const { auth } = await getFirebaseInstance();
         if (auth) {
@@ -38,16 +37,13 @@ class ProfilePage extends HTMLElement {
         const userId = await getCurrentUserId();
         try {
             const fetchedPosts = await getPostsByUser(userId); // Obtener los posts de Firestore
-            console.log('Posts cargados:', fetchedPosts);
             this.posts = fetchedPosts.map(post => ({
                 post: post.id,
                 comment: post.comment,
                 author: post.author,
                 likes: post.likes || 0,
                 imageURL: post.imageURL || ''
-
             }));
-            console.log('Posts cargados:', this.posts);
         } catch (error) {
             console.error("Error al cargar posts:", error);
         }
@@ -55,30 +51,26 @@ class ProfilePage extends HTMLElement {
 
     async initializePageContent() {
         const userId = await getCurrentUserId();
-        
         const container = this.shadowRoot?.querySelector('.container');
 
         const navbar = new Navbar();
         const profileCard = new ProfileCard();
-        const profileEditor = new ProfileEditor();
-    
+
         container?.appendChild(navbar);
         container?.appendChild(profileCard);
 
-        // Escuchar el evento de edición desde ProfileCard
+        // Escuchar el evento de edición desde ProfileCard para abrir el pop-up de edición
         profileCard.addEventListener('profile-updated', (event: Event) => {
             const customEvent = event as CustomEvent;
-            // Actualizar datos del perfil en firebase
+            updateUser(userId, customEvent.detail); // Actualizar datos del perfil en Firebase
+        });
 
-            updateUser(userId, customEvent.detail);
-        });
         profileCard.addEventListener('edit-profile', () => {
-            container?.appendChild(profileEditor); // Mostrar el editor de perfil
+            this.openProfileEditorPopup(); // Llama a la función para abrir el pop-up
         });
-    
+
         // Verificar si el usuario tiene posts
         if (this.posts.length === 0) {
-            // Renderizar un mensaje invitando a crear el primer post
             const noPostsMessage = document.createElement('p');
             noPostsMessage.textContent = "Aún no tienes posts. ¡Crea tu primer post y comparte tus pensamientos!";
             noPostsMessage.style.textAlign = 'center';
@@ -86,40 +78,89 @@ class ProfilePage extends HTMLElement {
             noPostsMessage.style.marginTop = '20px';
             container?.appendChild(noPostsMessage);
         } else {
-            // Renderizar los posts si existen
             this.posts.forEach((post) => {
                 this.createPostComponent(post);
             });
         }
     }
 
-    createPostComponent(post: { post: string; comment: string, author?: string, likes?: number , imageURL?: string}, insertAtBeginning = false) {
+    openProfileEditorPopup() {
+        const profileEditorPopup = document.createElement('div');
+        profileEditorPopup.classList.add('popup-overlay');
+
+        const profileEditorContainer = document.createElement('div');
+        profileEditorContainer.classList.add('popup-container');
+
+        const profileEditor = new ProfileEditor();
+        profileEditorContainer.appendChild(profileEditor);
+
+        // Botón de cierre
+        const closeButton = document.createElement('button');
+        closeButton.textContent = 'Cerrar';
+        closeButton.classList.add('close-button');
+        closeButton.addEventListener('click', () => {
+            this.shadowRoot?.removeChild(profileEditorPopup);
+            // Actualizar la página para reflejar los cambios
+            window.location.reload();
+        });
+
+        profileEditorContainer.appendChild(closeButton);
+        profileEditorPopup.appendChild(profileEditorContainer);
+
+        // Añadir el pop-up al shadow DOM
+        this.shadowRoot?.appendChild(profileEditorPopup);
+    }
+
+    createPostComponent(post: { post: string; comment: string, author?: string, likes?: number, imageURL?: string }) {
         const postComponent = new Post();
         postComponent.setAttribute('post', post.post);
         postComponent.setAttribute('comment', post.comment);
-        if (post.author) {
-            postComponent.setAttribute('author', post.author);
-        }
-        if (post.likes) {
-            postComponent.setAttribute('likes', post.likes.toString());
-        }
-        if (post.imageURL) {
-            postComponent.setAttribute('image-url', post.imageURL);
-        }
-    
+        if (post.author) postComponent.setAttribute('author', post.author);
+        if (post.likes) postComponent.setAttribute('likes', post.likes.toString());
+        if (post.imageURL) postComponent.setAttribute('image-url', post.imageURL);
+
         const container = this.shadowRoot?.querySelector('.container');
         container?.appendChild(postComponent);
     }
 
     render() {
         if (this.shadowRoot) {
-            this.shadowRoot.innerHTML = ` 
+            this.shadowRoot.innerHTML = `
             <style>
                 .container {
                     max-width: 800px;
                     margin: 0 auto;
                     padding: 10px;
                     margin-top: 4rem;
+                }
+                .popup-overlay {
+                    position: fixed;
+                    top: 0;
+                    left: 0;
+                    width: 100%;
+                    height: 100%;
+                    background-color: rgba(0, 0, 0, 0.5);
+                    display: flex;
+                    align-items: center;
+                    justify-content: center;
+                    z-index: 1000;
+                }
+                .popup-container {
+                    background-color: white;
+                    padding: 20px;
+                    border-radius: 8px;
+                    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+                    width: 90%;
+                    max-width: 500px;
+                }
+                .close-button {
+                    margin-top: 10px;
+                    background: #ff5f5f;
+                    color: white;
+                    border: none;
+                    padding: 8px 12px;
+                    border-radius: 5px;
+                    cursor: pointer;
                 }
             </style>
             <navbar-component></navbar-component>

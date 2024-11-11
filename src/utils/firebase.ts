@@ -158,6 +158,16 @@ export const getCurrentUserCredentials = async () => {
     const { auth } = await getFirebaseInstance();
     return auth.currentUser;
 };
+//Funcion para obtener la biografia del usuario
+export const getCurrentUserBio = async () => {
+    const user = JSON.parse(localStorage.getItem('user') || '{}');
+    return user?.bio || null;
+};
+// Función para obtener la ubicación del usuario
+export const getCurrentUserLocation = async () => {
+    const user = JSON.parse(localStorage.getItem('user') || '{}');
+    return user?.location || null;
+};
 
 // Función para agregar un post a Firestore
 export const addPost = async (post: any) => {
@@ -305,7 +315,7 @@ export const getPosts = async () => {
 
         const postsRef = collection(db, 'posts');
         const snapshot = await getDocs(postsRef);
-        
+
         return snapshot.docs.map((doc: any) => ({ id: doc.id, ...doc.data() }));
     } catch (error) {
         console.error("Error al obtener posts:", error);
@@ -330,7 +340,7 @@ export const getPostsByUser = async (userId: string) => {
     }
 };
 
-// Funcion para actualizar datos del usuario
+// Funcion para actualizar datos del usuario y el correo
 export const updateUser = async (userId: string, data: any) => {
     try {
         const { db } = await getFirebaseInstance();
@@ -339,11 +349,11 @@ export const updateUser = async (userId: string, data: any) => {
         const userRef = doc(db, 'users', userId);
         await updateDoc(userRef, data);
 
-        console.log("Datos de usuario actualizados:", data);
+        console.log("Usuario actualizado:", data);
     } catch (error) {
-        console.error("Error al actualizar datos de usuario:", error);
+        console.error("Error al actualizar usuario:", error);
     }
-};
+}
 
 // Función para setear la imagen de perfil del usuario, en Firestore
 export const setUserImage = async (userId: string, imageUrl: string) => {
