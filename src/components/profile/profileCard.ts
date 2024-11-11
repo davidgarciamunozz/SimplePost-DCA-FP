@@ -1,4 +1,4 @@
-import { getCurrentUserCredentials, getCurrentUserId, getCurrentUserName, getImage } from "../../utils/firebase";
+import { getCurrentUserBio, getCurrentUserCredentials, getCurrentUserId, getCurrentUserLocation, getCurrentUserName, getImage } from "../../utils/firebase";
 
 class ProfileCard extends HTMLElement {
     private userData: {
@@ -20,7 +20,6 @@ class ProfileCard extends HTMLElement {
         const userId = await getCurrentUserId();
         console.log('Credenciales del usuario:', userCredentials);
         try {
-            // Agregar un timestamp a la URL de la imagen para evitar caché
             const originalAvatarUrl = await getImage(userId);
             this.avatarUrl = originalAvatarUrl ? originalAvatarUrl : null;
             console.log('Imagen del usuario:', this.avatarUrl);
@@ -31,9 +30,9 @@ class ProfileCard extends HTMLElement {
         // Simular obtención de datos del usuario
         this.userData = {
             name: await getCurrentUserName(),
-            bio: "Entusiasta de la tecnologia y amante de los gatos",
+            bio: await getCurrentUserBio() || "Hola, soy nuevo en la comunidad",
             email: userCredentials?.email,
-            location: "Madrid, España"
+            location: await getCurrentUserLocation() || "En algún lugar del mundo",
         };
         this.render();
         this.setupEventListeners();
