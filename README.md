@@ -25,11 +25,11 @@ This project is an interactive and collaborative web application that allows use
 I opted for a minimalist design, inspired in the style of the social network threads, keeping a light visual feeling to the user, but without leaving behind functionalities such as being able to attach photos to the posts. The design is fully responsive to any device.
 
 ## C4 Model
-### Context Diagram
+## Context Diagram
 ![Context](./assets/Context.png)
-### Context Diagram
+## User Flow
 ![Flow](./assets/UserFlow.png)
-### Context Diagram
+## App Diagram
 ![App](./assets/AppDiagram.png)
-### Context Diagram
+## Container Diagram
 ![Container](./assets/ContainerDiagram.png)
