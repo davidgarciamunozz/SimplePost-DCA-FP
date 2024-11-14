@@ -1,12 +1,11 @@
 import Post from '../components/Post/Post';
 import Navbar from '../components/navigation/NavBar';
-import ProfileCard from '../components/profile/profileCard';
-import ProfileEditor from '../components/profile/editProfile';
+import ExternalProfileCard from './externalProfileCard';
 import { dispatch } from "../store/store";
 import { navigate } from '../store/actions';
-import { getCurrentUserId, getFirebaseInstance, getPostsByUser, updateUser } from '../utils/firebase';
+import { getFirebaseInstance, getPostsByUser } from '../utils/firebase';
 
-class ProfilePage extends HTMLElement {
+class ExternalProfilePage extends HTMLElement {
     posts: { post: string; comment: string, author?: string, likes?: number }[] = [];
     isEditing: boolean = false;
 
@@ -34,7 +33,11 @@ class ProfilePage extends HTMLElement {
     }
 
     async loadPostsFromFirestore() {
-        const userId = await getCurrentUserId();
+        const userId = localStorage.getItem('external-profile');
+        if (!userId) {
+            console.error('No se ha especificado un usuario externo');
+            return;
+        }
         try {
             const fetchedPosts = await getPostsByUser(userId); // Obtener los posts de Firestore
             this.posts = fetchedPosts.map(post => ({
@@ -50,24 +53,18 @@ class ProfilePage extends HTMLElement {
     }
 
     async initializePageContent() {
-        const userId = await getCurrentUserId();
+        const userId = localStorage.getItem('external-profile');
+        if (!userId) {
+            console.error('No se ha especificado un usuario externo');
+            return;
+        }
         const container = this.shadowRoot?.querySelector('.container');
 
         const navbar = new Navbar();
-        const profileCard = new ProfileCard();
+        const profileCard = new ExternalProfileCard();
 
         container?.appendChild(navbar);
         container?.appendChild(profileCard);
-
-        // Escuchar el evento de edición desde ProfileCard para abrir el pop-up de edición
-        profileCard.addEventListener('profile-updated', (event: Event) => {
-            const customEvent = event as CustomEvent;
-            updateUser(userId, customEvent.detail); // Actualizar datos del perfil en Firebase
-        });
-
-        profileCard.addEventListener('edit-profile', () => {
-            this.openProfileEditorPopup(); // Llama a la función para abrir el pop-up
-        });
 
         // Verificar si el usuario tiene posts
         if (this.posts.length === 0) {
@@ -82,33 +79,6 @@ class ProfilePage extends HTMLElement {
                 this.createPostComponent(post);
             });
         }
-    }
-
-    openProfileEditorPopup() {
-        const profileEditorPopup = document.createElement('div');
-        profileEditorPopup.classList.add('popup-overlay');
-
-        const profileEditorContainer = document.createElement('div');
-        profileEditorContainer.classList.add('popup-container');
-
-        const profileEditor = new ProfileEditor();
-        profileEditorContainer.appendChild(profileEditor);
-
-        // Botón de cierre
-        const closeButton = document.createElement('button');
-        closeButton.textContent = 'Cerrar';
-        closeButton.classList.add('close-button');
-        closeButton.addEventListener('click', () => {
-            this.shadowRoot?.removeChild(profileEditorPopup);
-            // Actualizar la página para reflejar los cambios
-            window.location.reload();
-        });
-
-        profileEditorContainer.appendChild(closeButton);
-        profileEditorPopup.appendChild(profileEditorContainer);
-
-        // Añadir el pop-up al shadow DOM
-        this.shadowRoot?.appendChild(profileEditorPopup);
     }
 
     createPostComponent(post: { post: string; comment: string, author?: string, likes?: number, imageURL?: string }) {
@@ -187,4 +157,4 @@ class ProfilePage extends HTMLElement {
     }
 }
 
-customElements.define('profile-page', ProfilePage);
+customElements.define('external-page', ExternalProfilePage);

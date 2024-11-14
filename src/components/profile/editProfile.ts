@@ -1,5 +1,3 @@
-import { navigate } from "../../store/actions";
-import { dispatch } from "../../store/store";
 import { getCurrentUserBio, getCurrentUserCredentials, getCurrentUserId, getCurrentUserLocation, getCurrentUserName, getImage, setUserImage, updateUser } from "../../utils/firebase";
 import { uploadprofileImage } from "../../utils/storageImages";
 
@@ -49,12 +47,28 @@ class ProfileEditor extends HTMLElement {
                 <style>
                     .editor-container {
                         font-family: Arial, sans-serif;
-                        max-width: 800px;
-                        margin: 0 auto;
-                        padding: 24px;
+                        max-width: 90vw; /* Cambia el ancho máximo en móviles */
+                        margin: 16px auto; /* Reduce el margen */
+                        padding: 16px; /* Ajusta el padding para pantallas más pequeñas */
                         background: white;
                         border-radius: 12px;
                         box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+                    }
+          
+                    @media (max-width: 600px) {
+                        .editor-container {
+                            max-width: 95vw;
+                            max-height: 70%;
+                            padding: 12px;
+                        }
+
+                        .save-button {
+                            width: 100%;
+                        }
+
+                        h1 {
+                            font-size: 20px; /* Reduce el tamaño del título */
+                        }
                     }
 
                     h1 {

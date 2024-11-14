@@ -403,3 +403,44 @@ export const uploadPostImage = async (postId: string, imageUrl: string) => {
         console.error("Error al actualizar imagen de post:", error);
     }
 };
+
+//crear una funcion que me permita obtener el id de un usuario a partir del id de un post
+export const getUserIdFromPost = async (postId: string) => {
+    try {
+        const { db } = await getFirebaseInstance();
+        const { doc, getDoc } = await import('firebase/firestore');
+
+        const postRef = doc(db, 'posts', postId);
+        const postDoc = await getDoc(postRef);
+
+        if (postDoc.exists()) {
+            const postData = postDoc.data();
+            return postData.userId || null;
+        }
+
+        return null;
+    } catch (error) {
+        console.error("Error al obtener el id del usuario:", error);
+        return null;
+    }
+};
+
+//funcion para cargar datos de usuario con id (username, email, bio, location) 
+export const getUserDataById = async (userId: string) => {
+    try {
+        const { db } = await getFirebaseInstance();
+        const { doc, getDoc } = await import('firebase/firestore');
+
+        const userRef = doc(db, 'users', userId);
+        const userDoc = await getDoc(userRef);
+
+        if (userDoc.exists()) {
+            return userDoc.data();
+        }
+
+        return null;
+    } catch (error) {
+        console.error("Error al obtener datos de usuario:", error);
+        return null;
+    }
+};

@@ -4,6 +4,7 @@ import './pages/landing';
 import './pages/register';
 import './pages/login';
 import './pages/profile';
+import './Server/externalProfile';
 //importar el estado global
 import { appState, dispatch } from "./store/store";
 //importar observador
@@ -48,7 +49,10 @@ class AppContainer extends HTMLElement {
                 const ProfilePage = document.createElement('profile-page');
                 this.shadowRoot?.appendChild(ProfilePage);
                 break;
-
+            case 'EXTERNAL_PROFILE':
+                const ExternalProfilePage = document.createElement('external-page');
+                this.shadowRoot?.appendChild(ExternalProfilePage);
+                break;
             default:
                 break;
         }

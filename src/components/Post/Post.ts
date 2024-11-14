@@ -1,4 +1,6 @@
-import { addCommentToPost, getCommentsForPost, getLikesForPost, likePost, removeLike } from "../../utils/firebase";
+import { navigate } from "../../store/actions";
+import { dispatch } from "../../store/store";
+import { addCommentToPost, getCommentsForPost, getLikesForPost, getUserIdFromPost, likePost, removeLike } from "../../utils/firebase";
 
 class Post extends HTMLElement {
     private comment: string = '';
@@ -171,7 +173,7 @@ class Post extends HTMLElement {
                 <div class="post">
                     <div class="post-header">
                         <div class="avatar">${this.author[0]}</div>
-                        <span class="author">${this.author}</span>
+                         <span class="author clickable">${this.author}</span>
                     </div>
                     <div class="comment">${this.comment}</div>
                        ${this.imageURL ? `<img src="${this.imageURL}" class="post-image" />` : ''}
@@ -206,7 +208,15 @@ class Post extends HTMLElement {
                     input.value = '';
                 }
             });
-        }
+            const postHeader = this.shadowRoot.querySelector('.post-header');
+            postHeader?.addEventListener('click', () => {
+                getUserIdFromPost(this.postId).then((userId) => {
+                    console.log(userId);
+                    localStorage.setItem('external-profile', userId);
+                    dispatch(navigate('EXTERNAL_PROFILE'));
+                });
+            });
+    }
     }
 }
 
