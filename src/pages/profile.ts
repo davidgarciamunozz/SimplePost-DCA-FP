@@ -16,16 +16,16 @@ class ProfilePage extends HTMLElement {
     }
 
     async connectedCallback() {
-        this.renderLoading(); // Muestra el mensaje de "Cargando..."
+        this.renderLoading(); 
 
         const { auth } = await getFirebaseInstance();
         if (auth) {
             auth.onAuthStateChanged(async (user: any) => {
                 if (user) {
-                    console.log('Usuario autenticado');
-                    await this.loadPostsFromFirestore(); // Cargar los posts desde Firestore
-                    this.render(); // Renderizar la estructura base de la página
-                    this.initializePageContent(); // Inicializar y agregar los componentes a la página
+                    // console.log('Usuario autenticado');
+                    await this.loadPostsFromFirestore(); 
+                    this.render(); 
+                    this.initializePageContent(); 
                 } else {
                     dispatch(navigate('LOGIN'));
                 }
@@ -36,7 +36,7 @@ class ProfilePage extends HTMLElement {
     async loadPostsFromFirestore() {
         const userId = await getCurrentUserId();
         try {
-            const fetchedPosts = await getPostsByUser(userId); // Obtener los posts de Firestore
+            const fetchedPosts = await getPostsByUser(userId); 
             this.posts = fetchedPosts.map(post => ({
                 post: post.id,
                 comment: post.comment,
@@ -59,14 +59,14 @@ class ProfilePage extends HTMLElement {
         container?.appendChild(navbar);
         container?.appendChild(profileCard);
 
-        // Escuchar el evento de edición desde ProfileCard para abrir el pop-up de edición
+        // Listen for profile updates
         profileCard.addEventListener('profile-updated', (event: Event) => {
             const customEvent = event as CustomEvent;
-            updateUser(userId, customEvent.detail); // Actualizar datos del perfil en Firebase
+            updateUser(userId, customEvent.detail); // Update user data
         });
 
         profileCard.addEventListener('edit-profile', () => {
-            this.openProfileEditorPopup(); // Llama a la función para abrir el pop-up
+            this.openProfileEditorPopup(); // Calls the method to open the profile editor
         });
 
         // Verificar si el usuario tiene posts

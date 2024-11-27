@@ -15,16 +15,16 @@ class ExternalProfilePage extends HTMLElement {
     }
 
     async connectedCallback() {
-        this.renderLoading(); // Muestra el mensaje de "Cargando..."
+        this.renderLoading(); // Show "Loading..." message
 
         const { auth } = await getFirebaseInstance();
         if (auth) {
             auth.onAuthStateChanged(async (user: any) => {
                 if (user) {
-                    console.log('Usuario autenticado');
-                    await this.loadPostsFromFirestore(); // Cargar los posts desde Firestore
-                    this.render(); // Renderizar la estructura base de la página
-                    this.initializePageContent(); // Inicializar y agregar los componentes a la página
+                    // console.log('Usuario autenticado');
+                    await this.loadPostsFromFirestore(); // Load posts from Firestore
+                    this.render(); // Render the base structure of the page
+                    this.initializePageContent(); // Initialize and add components
                 } else {
                     dispatch(navigate('LOGIN'));
                 }
@@ -39,7 +39,7 @@ class ExternalProfilePage extends HTMLElement {
             return;
         }
         try {
-            const fetchedPosts = await getPostsByUser(userId); // Obtener los posts de Firestore
+            const fetchedPosts = await getPostsByUser(userId); // Get posts by user
             this.posts = fetchedPosts.map(post => ({
                 post: post.id,
                 comment: post.comment,

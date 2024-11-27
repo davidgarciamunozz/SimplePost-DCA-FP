@@ -5,9 +5,7 @@ import './pages/register';
 import './pages/login';
 import './pages/profile';
 import './Server/externalProfile';
-//importar el estado global
 import { appState, dispatch } from "./store/store";
-//importar observador
 import {subscribe} from "./store/store";
 
 class AppContainer extends HTMLElement {
@@ -21,12 +19,12 @@ class AppContainer extends HTMLElement {
 
     connectedCallback() {
         this.render();
-        console.log(appState);
+        // console.log(appState);
     }
 
     render () {
         if (this.shadowRoot) this.shadowRoot.innerHTML = '';
-        console.log(appState);
+        // console.log(appState);
         // conditional rendering depending on the global state
         switch (appState.screen) {
             case 'HOME':

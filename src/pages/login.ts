@@ -35,7 +35,7 @@ class LoginPage extends HTMLElement {
 
         form?.addEventListener('submit', async (e: Event) => {
             e.preventDefault();
-            console.log('Form data:', this.formData);
+            // console.log('Form data:', this.formData);
             try {
                 await loginUser(this.formData.email, this.formData.password);
             } catch (error:any) {

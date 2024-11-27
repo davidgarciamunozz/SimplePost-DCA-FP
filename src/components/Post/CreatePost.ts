@@ -121,7 +121,7 @@ class PostCreator extends HTMLElement {
         const target = event.target as HTMLInputElement;
         if (target.files && target.files.length > 0) {
             this.selectedFile = target.files[0];
-            this.addPhotoButton!.textContent = '📷✓'; // Cambiar el icono para indicar que se ha seleccionado una imagen
+            this.addPhotoButton!.textContent = '📷✓'; // Change the icon if there is and image added
         }
     }
 
@@ -132,20 +132,20 @@ class PostCreator extends HTMLElement {
     
         if (comment) {
             try {
-                // Si hay un archivo seleccionado, súbelo a Firebase y obtén la URL
+                // if there is a selected file, upload it to Firebase Storage
                 if (this.selectedFile) {
-                    const imageData = await uploadImage(this.selectedFile); // Añade esta función en Firebase
+                    const imageData = await uploadImage(this.selectedFile); // Upload the image to Firebase Storage
                     imageURL = imageData.secure_url;
                 }
     
-                // Emitir evento personalizado con los datos completos del post
+                // Emit a new-post event with the post data
                 const newPostEvent = new CustomEvent('new-post', {
                     detail: { comment, author, likes: 0, imageURL },
                     bubbles: true,
                 });
                 this.dispatchEvent(newPostEvent);
     
-                // Limpiar el textarea y resetear la selección de archivo después de publicar
+                // Reset the form
                 if (this.textArea) this.textArea.value = '';
                 this.selectedFile = null;
                 if (this.addPhotoButton) this.addPhotoButton.textContent = '📷';

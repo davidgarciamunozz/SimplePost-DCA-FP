@@ -28,7 +28,7 @@ export const getFirebaseInstance = async () => {
         onAuthStateChanged(auth, async (user) => {
             if (user) {
                 // Usuario ha iniciado sesión
-                console.log("Usuario autenticado:", user);
+                // console.log("Usuario autenticado:", user);
                 // dispatch(navigate('HOME')); // Navega a la pantalla principal
 
                 // Obtener datos adicionales del usuario desde Firestore
@@ -39,12 +39,12 @@ export const getFirebaseInstance = async () => {
                 if (userDoc.exists()) {
                     const userData = userDoc.data();
                     localStorage.setItem('user', JSON.stringify(userData));
-                    console.log("Nombre de usuario:", userData.username);
+                    // console.log("Nombre de usuario:", userData.username);
                     // dispatch(navigate('HOME')); // Navega a la pantalla principal
                 }
             } else {
                 // Usuario no está autenticado
-                console.log("No hay usuario autenticado.");
+                // console.log("No hay usuario autenticado.");
                 localStorage.removeItem('user');
                 dispatch(navigate('LOGIN')); // Navega a la pantalla de login
             }
@@ -54,27 +54,27 @@ export const getFirebaseInstance = async () => {
 };
 
 export const registerUser = async (credentials: any) => {
-    console.log('credentials', credentials);    
+    // console.log('credentials', credentials);    
     try {
         const { auth, db } = await getFirebaseInstance();
         const { createUserWithEmailAndPassword } = await import('firebase/auth');
         const { doc, setDoc } = await import('firebase/firestore');
 
-        // Crear el usuario de autenticación
+        //Create user with email and password
         const userCredential = await createUserWithEmailAndPassword(auth, credentials.email, credentials.password);
 
         // Referencia al documento del usuario en Firestore
         const where = doc(db, 'users', userCredential.user.uid);
 
-        // Datos adicionales para almacenar en Firestore
+        // Aditional data to store in Firestore
         const data = {
             username: credentials.username,
             email: credentials.email,
         };
 
-        // Guardar los datos adicionales en Firestore
+        // Set the data in Firestore
         await setDoc(where, data);
-        // Navegar al Login
+        // redirect to login
         dispatch(navigate('LOGIN'));
         return true;
     } catch (error:any) {
@@ -109,7 +109,7 @@ export const loginUser = async (email: string, password: string) => {
         if (userDoc.exists()) {
             const userData = userDoc.data();
             localStorage.setItem('user', JSON.stringify(userData));
-            console.log("Nombre de usuario:", userData.username);
+            // console.log("Nombre de usuario:", userData.username);
         }
         
         dispatch(navigate('HOME'));
@@ -133,43 +133,43 @@ export const logoutUser = async () => {
         const { signOut } = await import('firebase/auth');
         await signOut(auth);
 
-        // Limpiar información del usuario al cerrar sesión
+        // Clear user data from localStorage
         localStorage.removeItem('user');
-        console.log("Usuario ha cerrado sesión.");
-        dispatch(navigate('LOGIN'));
+        // console.log("Usuario ha cerrado sesión.");
+        dispatch(navigate('LANDING'));
     } catch (error) {
         console.error("Error al cerrar sesión:", error);
     }
 };
 
-// Función para obtener el nombre del usuario actualmente autenticado
+// Function to get the current user's username
 export const getCurrentUserName = () => {
     const user = JSON.parse(localStorage.getItem('user') || '{}');
     return user?.username || null;
 };
-// Función para obtener el id del usuario actualmente autenticado
+// Function to get the current user's email
 export const getCurrentUserId = async () => {
     const { auth } = await getFirebaseInstance();
     return auth.currentUser?.uid;
 }
 
-// Función para obtener todos los datos del usuario actualmente autenticado
+// Function to get the current user's email and aditional data
 export const getCurrentUserCredentials = async () => {
     const { auth } = await getFirebaseInstance();
     return auth.currentUser;
 };
-//Funcion para obtener la biografia del usuario
+// Function to get the current user's bio
 export const getCurrentUserBio = async () => {
     const user = JSON.parse(localStorage.getItem('user') || '{}');
     return user?.bio || null;
 };
-// Función para obtener la ubicación del usuario
+// Function to get the current user's location
 export const getCurrentUserLocation = async () => {
     const user = JSON.parse(localStorage.getItem('user') || '{}');
     return user?.location || null;
 };
 
-// Función para agregar un post a Firestore
+//  Function to add a post to Firestore
 export const addPost = async (post: any) => {
     try {
         const { db, auth } = await getFirebaseInstance();
@@ -189,7 +189,7 @@ export const addPost = async (post: any) => {
 
         const postsRef = collection(db, 'posts');
         const docRef = await addDoc(postsRef, postWithUser); // Obtén la referencia del documento
-        console.log("Post agregado con ID de usuario:", userId);
+        // console.log("Post agregado con ID de usuario:", userId);
 
         return docRef.id; // Retorna el ID del documento
 
@@ -199,7 +199,7 @@ export const addPost = async (post: any) => {
     }
 };
 
-// Función para agregar un comentario a un post en Firestore
+// Function to add a comment to a post in Firestore
 export const addCommentToPost = async (postId: string, comment: string) => {
     try {
         const { db, auth } = await getFirebaseInstance();
@@ -221,14 +221,14 @@ export const addCommentToPost = async (postId: string, comment: string) => {
             comments: arrayUnion({ userId,author, comment })
         });
 
-        console.log("Comentario agregado al post:", postId , 'autor:', author);
+        // console.log("Comentario agregado al post:", postId , 'autor:', author);
 
     } catch (error) {
         console.error("Error al agregar comentario:", error);
     }
 };
 
-// Función para obtener comentarios de un post en Firestore
+// Function to get comments for a post
 export const getCommentsForPost = async (postId: string) => {
     try {
         const { db } = await getFirebaseInstance();
@@ -249,7 +249,7 @@ export const getCommentsForPost = async (postId: string) => {
     }
 };
 
-//función para aunmentar likes de un post
+// Function to like a post
 export const likePost = async (postId: string, userId: string) => {
     try {
         const { db } = await getFirebaseInstance();
@@ -262,13 +262,13 @@ export const likePost = async (postId: string, userId: string) => {
             likes: arrayUnion(userId) // Usamos arrayUnion para asegurar que el like de cada usuario sea único
         });
 
-        console.log(`Post ${postId} liked by user ${userId}`);
+        // console.log(`Post ${postId} liked by user ${userId}`);
     } catch (error) {
         console.error("Error al dar like al post:", error);
     }
 };
 
-// Función para disminuir el like de un post
+// Function to remove a like from a post
 export const removeLike = async (postId: string, userId: string) => {
     try {
         const { db } = await getFirebaseInstance();
@@ -281,12 +281,12 @@ export const removeLike = async (postId: string, userId: string) => {
             likes: arrayRemove(userId) // Usamos arrayRemove para quitar un like del usuario
         });
 
-        console.log(`Like removed from post ${postId} by user ${userId}`);
+        // console.log(`Like removed from post ${postId} by user ${userId}`);
     } catch (error) {
         console.error("Error al quitar el like al post:", error);
     }
 };
-//función para obtener los likes de un post
+//function to obtain the likes of a post
 export const getLikesForPost = async (postId: string) => {
     try {
         const { db } = await getFirebaseInstance();
@@ -307,7 +307,7 @@ export const getLikesForPost = async (postId: string) => {
     }
 };
 
-// Función para obtener todos los posts de Firestore ordenados por fecha de creación
+// Function to get all posts from Firestore
 export const getPosts = async () => {
     try {
         const { db } = await getFirebaseInstance();
@@ -330,8 +330,26 @@ export const getPosts = async () => {
     }
 };
 
+// Function to subscribe to changes in posts collection
+export const subscribeToPosts = async (callback: (posts: any) => void) => {
+    try {
+        const { db } = await getFirebaseInstance();
+        const { collection, query, orderBy, onSnapshot } = await import('firebase/firestore');
 
-// Función para obtener los posts de un usuario específico
+        const postsRef = collection(db, 'posts');
+        const q = query(postsRef, orderBy('createdAt', 'desc'));
+
+        return onSnapshot(q, (snapshot) => {
+            const posts = snapshot.docs.map((doc: any) => ({ id: doc.id, ...doc.data() }));
+            callback(posts);
+        });
+    } catch (error) {
+        console.error("Error al suscribirse a cambios en posts:", error);
+        return null;
+    }
+}
+
+// Function to get posts by user ID
 export const getPostsByUser = async (userId: string) => {
     try {
         const { db } = await getFirebaseInstance();
@@ -348,7 +366,7 @@ export const getPostsByUser = async (userId: string) => {
     }
 };
 
-// Funcion para actualizar datos del usuario y el correo
+// Function to update data of a user in Firestore
 export const updateUser = async (userId: string, data: any) => {
     try {
         const { db } = await getFirebaseInstance();
@@ -357,13 +375,13 @@ export const updateUser = async (userId: string, data: any) => {
         const userRef = doc(db, 'users', userId);
         await updateDoc(userRef, data);
 
-        console.log("Usuario actualizado:", data);
+        // console.log("Usuario actualizado:", data);
     } catch (error) {
         console.error("Error al actualizar usuario:", error);
     }
 }
 
-// Función para setear la imagen de perfil del usuario, en Firestore
+// Function to set the image of a user in Firestore
 export const setUserImage = async (userId: string, imageUrl: string) => {
     try {
         const { db } = await getFirebaseInstance();
@@ -372,12 +390,12 @@ export const setUserImage = async (userId: string, imageUrl: string) => {
         const userRef = doc(db, 'users', userId);
         await updateDoc(userRef, { imageUrl });
 
-        console.log("Imagen de usuario actualizada:", imageUrl);
+        // console.log("Imagen de usuario actualizada:", imageUrl);
     } catch (error) {
         console.error("Error al actualizar imagen de usuario:", error);
     }
 };
-// Función para obtener la imagen de perfil del usuario
+// Function to obtain the image of a user from Firestore
 export const getImage = async (userId: string) => {
     try {
         const { db } = await getFirebaseInstance();
@@ -397,7 +415,7 @@ export const getImage = async (userId: string) => {
         return null;
     }
 };
-// Función para subir la imagen del post que esta en cloudinary a firestore
+// Function to upload an image to Cloudinary
 export const uploadPostImage = async (postId: string, imageUrl: string) => {
     try {
         const { db } = await getFirebaseInstance();
@@ -406,13 +424,13 @@ export const uploadPostImage = async (postId: string, imageUrl: string) => {
         const postRef = doc(db, 'posts', postId);
         await updateDoc(postRef, { imageUrl });
 
-        console.log("Imagen de post actualizada:", imageUrl);
+        // console.log("Imagen de post actualizada:", imageUrl);
     } catch (error) {
         console.error("Error al actualizar imagen de post:", error);
     }
 };
 
-//crear una funcion que me permita obtener el id de un usuario a partir del id de un post
+// Function to get the id of the user who created a post
 export const getUserIdFromPost = async (postId: string) => {
     try {
         const { db } = await getFirebaseInstance();
@@ -433,7 +451,7 @@ export const getUserIdFromPost = async (postId: string) => {
     }
 };
 
-//funcion para cargar datos de usuario con id (username, email, bio, location) 
+// Function to get the data of a user by ID
 export const getUserDataById = async (userId: string) => {
     try {
         const { db } = await getFirebaseInstance();

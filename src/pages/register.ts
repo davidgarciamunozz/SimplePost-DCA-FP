@@ -34,7 +34,6 @@ class RegisterPage extends HTMLElement {
             input.addEventListener('input', (e: Event) => {
                 const target = e.target as HTMLInputElement;
                 this.formData[target.name as keyof typeof this.formData] = target.value;
-                // console.log(`Valor capturado para ${target.name}:`, target.value);
             });
         });
 
@@ -42,7 +41,7 @@ class RegisterPage extends HTMLElement {
             e.preventDefault();
             if (this.validateForm()) {
                 try {
-                    console.log("Datos enviados al registrar usuario:", this.formData);
+                    // console.log("Datos enviados al registrar usuario:", this.formData);
                     const success = await registerUser({
                         email: this.formData.email,
                         password: this.formData.password,

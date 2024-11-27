@@ -25,15 +25,15 @@ class ExternalProfileCard extends HTMLElement {
         try {
             const originalAvatarUrl = await getImage(userId);
             this.avatarUrl = originalAvatarUrl ? originalAvatarUrl : null;
-            console.log('Imagen del usuario:', this.avatarUrl);
+            // console.log('Imagen del usuario:', this.avatarUrl);
         } catch (error) {
             console.error("Error al obtener la imagen del usuario:", error);
-            this.avatarUrl = null; // Dejarlo como nulo si no se obtiene imagen
+            this.avatarUrl = null; // set null if there is an error
         }
-        // Simular obtención de datos del usuario
+        // Default user data
         this.userData = {
             name: userCredentials?.username,
-            bio: userCredentials?.bio || "Hola, soy nuevo en la comunidad",
+            bio: userCredentials?.bio || "Hola, soy nuev@ en la comunidad",
             email: userCredentials?.email,
             location: userCredentials?.location || "En algún lugar del mundo",
         };

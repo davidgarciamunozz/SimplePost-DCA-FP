@@ -228,7 +228,7 @@ class ProfileEditor extends HTMLElement {
                     this.avatarPreview.innerHTML = `<img src="${imageUrlWithCacheBuster}" style="width: 100%; height: 100%; border-radius: 50%; object-fit: cover;">`;
                 }
                 
-                console.log('Imagen subida exitosamente:', data.secure_url);
+                // console.log('Imagen subida exitosamente:', data.secure_url);
                 setUserImage(userId, data.secure_url);
             } catch (error) {
                 console.error('Error al subir la imagen:', error);
@@ -252,7 +252,7 @@ class ProfileEditor extends HTMLElement {
 
             await updateUser(userId, userData);
             // Aquí iría la lógica para guardar los datos
-            console.log('Datos a guardar:', userData);
+            // console.log('Datos a guardar:', userData);
             
             // Emitir evento de actualización
             const updateEvent = new CustomEvent('profile-updated', {

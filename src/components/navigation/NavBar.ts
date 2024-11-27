@@ -6,8 +6,8 @@ import { logoutUser } from "../../utils/firebase";
 
 class Navbar extends HTMLElement {
     
-    // declaracion de propiedad en una clase de typescript, propiedad privada
-    // Encapsulamiento de datos
+    // declaration of a property to store the state of the mobile menu
+    // data encapsulation is important to avoid side effects
     private mobileMenuOpen: boolean = false;
 
     constructor() {
@@ -18,7 +18,7 @@ class Navbar extends HTMLElement {
     connectedCallback() {
         this.render();
         this.addEventListeners();
-        console.log(appState);
+        // console.log(appState);
     }
 
     addEventListeners() {
@@ -30,7 +30,7 @@ class Navbar extends HTMLElement {
         this.mobileMenuOpen = !this.mobileMenuOpen;
         this.render();
         this.addEventListeners(); 
-        console.log(this.mobileMenuOpen);
+        // console.log(this.mobileMenuOpen);
     }
 
     render() {
@@ -161,24 +161,24 @@ class Navbar extends HTMLElement {
                 </div>
             `;
 
-            // Evento para cerrar sesión con Firebase
+            // Event to logout the user
             const logoutButton = this.shadowRoot.querySelector('#cerrar-sesion');
             logoutButton?.addEventListener('click', async () => {
                 await logoutUser();
             });
 
-            // Evento para cambiar de pantalla al clickear el logo
+            // Event to navigate to the main screen if the user clicks on the icon button
             const logoButton = this.shadowRoot.querySelector('.logo');
             logoButton?.addEventListener('click', () => {
                 dispatch(navigate('HOME'));
             });
         
 
-            // Evento para cambiar de pantalla
+            // Event to navigate to the profile screen
             const perfilButton = this.shadowRoot.querySelector('#perfil');
             perfilButton?.addEventListener('click', () => {
                 dispatch(navigate('PROFILE'));
-                console.log(appState);
+                // console.log(appState);
             }
                 
         );

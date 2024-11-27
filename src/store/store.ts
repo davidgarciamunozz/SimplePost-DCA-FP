@@ -1,6 +1,6 @@
 import { reducer } from './reducers'
 import {get, set} from '../utils/storage'
-//Estado Global para la renderización de la pantalla
+//Global state to manage screens
 
 //initial State
 const initialState = {
@@ -16,20 +16,20 @@ const persistStore = (state : any) => {
 	set('STORE', state);
 }
 
-//Crear el dispatch
+
 export const dispatch = (action: any) => {
     const clone = JSON.parse(JSON.stringify(appState));
 	const newState = reducer(action, clone);
 	appState = newState;
 	//Persist State
 	persistStore(newState);
-    //Notificar a los observadores
+    //Notify all observers
     observers.forEach((observer) => {
         observer.render();
     } )
 }
 
-//Agregar observador para el cambio de estado
+// Add observer to the store
 let observers: any[] = []
 export const subscribe = (observer: any) => {
     observers.push(observer)

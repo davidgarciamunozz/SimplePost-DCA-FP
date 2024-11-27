@@ -3,11 +3,11 @@ import PostCreator from '../components/Post/CreatePost';
 import Navbar from '../components/navigation/NavBar';
 import { dispatch } from "../store/store";
 import { navigate } from '../store/actions';
-import { addPost, getFirebaseInstance ,getPosts} from '../utils/firebase';
+import { addPost, getFirebaseInstance ,getPosts, subscribeToPosts} from '../utils/firebase';
 
 class MainPage extends HTMLElement {
     posts: { post: string; comment: string, author?: string, likes?: number, imageURL: string }[] = [];
-    unsubscribe: (() => void) | null = null; // Función para cancelar la suscripción
+    unsubscribe: (() => void) | null = null; // Function to unsubscribe from Firestore
 
     constructor() {
         super();
@@ -15,16 +15,26 @@ class MainPage extends HTMLElement {
     }
 
     async connectedCallback() {
-        this.renderLoading(); // Muestra el mensaje de "Cargando..."
+        this.renderLoading(); 
 
         const { auth } = await getFirebaseInstance();
         if (auth) {
             auth.onAuthStateChanged(async (user: any) => {
                 if (user) {
-                    console.log('Usuario autenticado');
-                    this.render(); // Renderiza la estructura base de la página
-                    await this.loadPostsFromFirestore(); // Carga los posts de Firestore
-                    this.initializePageContent(); // Inicializa y agrega los componentes
+                    // console.log('Usuario autenticado');
+                    this.render(); 
+                    this.initializePageContent(); 
+                    //  Listen to changes in the posts collection
+                    this.unsubscribe = await subscribeToPosts((posts: any) => {
+                        this.posts = posts.map((post: any) => ({
+                            post: post.id,
+                            comment: post.comment,
+                            author: post.author,
+                            likes: post.likes || 0,
+                            imageURL: post.imageURL || ''
+                        }));
+                        this.refreshPosts(); // Update the UI with the new posts
+                    });
                 } else {
                     dispatch(navigate('LOGIN'));
                 }
@@ -32,30 +42,24 @@ class MainPage extends HTMLElement {
         }
     }
 
-    async loadPostsFromFirestore() {
-        try {
-            const fetchedPosts = await getPosts(); // Obtener los posts de Firestore
+    refreshPosts() {
+        const container = this.shadowRoot?.querySelector('.container');
+        if (container) {
+            // Select and remove existing posts
+            const existingPosts = container.querySelectorAll('.post');
+            existingPosts.forEach((post) => post.remove());
     
-            // Si la base de datos está vacía, no hacemos ningún update de estado
-            if (fetchedPosts.length === 0) {
-                console.log("No hay posts en la base de datos");
-                return; // Evita continuar con el dispatch si no hay posts
-            }
-    
-            // Si hay posts, los mapeamos y los agregamos al estado
-            this.posts = fetchedPosts.map((post: any) => ({
-                post: post.id,
-                comment: post.comment,
-                author: post.author,
-                likes: post.likes || 0,
-                imageURL: post.imageURL || ''
-            }));
-    
-            // Solo actualizamos el estado si hay posts
-            console.log('Posts cargados:', this.posts);
-        } catch (error) {
-            console.error("Error al cargar posts:", error);
+            // Render the updated posts
+            this.posts.forEach((post) => {
+                this.createPostComponent(post);
+            });
         }
+    }
+    
+
+    disconnectedCallback() {
+        // Unsubscribe from Firestore when the component is removed
+        if (this.unsubscribe) this.unsubscribe();
     }
 
     initializePageContent() {
@@ -67,7 +71,7 @@ class MainPage extends HTMLElement {
         container?.appendChild(navbar);
         container?.appendChild(postCreator);
     
-        //renderizar los post desde firebase
+        // Render existing posts
         this.posts.forEach((post) => {
             this.createPostComponent(post);
         });
@@ -76,12 +80,12 @@ class MainPage extends HTMLElement {
             const newPost = { post: '', comment, author, likes: 0, imageURL };
     
             try {
-                // Añade el post a Firebase y obtén el ID del documento
+                // Add the new post to Firestore and get the ID
                 const postId = await addPost(newPost);
                 newPost.post = postId;
     
-                // Inserta el nuevo post en el DOM al principio
-                this.createPostComponent(newPost, true); // Inserta el nuevo post al inicio
+                // Add the new post to the UI after it's been added to Firestore
+                this.createPostComponent(newPost, true); // Insert at the beginning
             } catch (error) {
                 console.error("Error al agregar el post al DOM:", error);
             }
@@ -93,6 +97,8 @@ class MainPage extends HTMLElement {
         const postComponent = new Post();
         postComponent.setAttribute('post', post.post);
         postComponent.setAttribute('comment', post.comment);
+        postComponent.classList.add('post'); // Add a class to style the post
+    
         if (post.author) {
             postComponent.setAttribute('author', post.author);
         }
@@ -102,16 +108,17 @@ class MainPage extends HTMLElement {
         if (post.imageURL) {
             postComponent.setAttribute('image-url', post.imageURL);
         }
-
+    
         const container = this.shadowRoot?.querySelector('.container');
         const postCreator = container?.querySelector('post-creator');
-
+    
         if (insertAtBeginning && postCreator) {
             container?.insertBefore(postComponent, postCreator.nextSibling);
         } else {
             container?.appendChild(postComponent);
         }
     }
+    
 
     render() {
         if (this.shadowRoot) {

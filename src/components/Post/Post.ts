@@ -7,11 +7,11 @@ class Post extends HTMLElement {
     private author: string = '';
     private likes: string[] = [];
     private comments: string[] = [];
-    private postId: string = ''; // Añade un identificador para el post
-    private imageURL: string = ''; // URL de la imagen
+    private postId: string = ''; // Add an ID for the post
+    private imageURL: string = ''; // URL of the image
 
     static get observedAttributes() {
-        return ['comment', 'author', 'likes', 'post', 'image-url']; // Observa también el id del post
+        return ['comment', 'author', 'likes', 'post', 'image-url']; 
     }
 
     constructor() {
@@ -21,7 +21,7 @@ class Post extends HTMLElement {
 
     async connectedCallback() {
         this.render();
-        await this.loadPostData(); // Cargar datos del post (likes y comentarios)
+        await this.loadPostData(); // load post data when the component is connected
     }
 
     attributeChangedCallback(name: string, oldValue: string, newValue: string) {
@@ -44,7 +44,7 @@ class Post extends HTMLElement {
                     this.postId = newValue;
                     break;
                 case 'image-url':
-                    this.imageURL = newValue; // Establece la URL de la imagen
+                    this.imageURL = newValue; // Set the image URL
                     break;
             }
             this.render();
@@ -53,18 +53,18 @@ class Post extends HTMLElement {
 
     async loadPostData() {
         if (this.postId) {
-            // Cargar los comentarios del post
+            //load comments for the post
             const commentsData = await getCommentsForPost(this.postId);
             this.comments = commentsData.map((comment: any) => ({
                 author: comment.author,
                 comment: comment.comment
             }));
 
-            // Cargar los likes del post y si no tiene, asignar un cero 
+            // Load likes for the post and set the local likes array
             const likesData = await getLikesForPost(this.postId);
             this.likes = likesData || [];
 
-            this.render(); // Vuelve a renderizar con los datos cargados
+            this.render(); // Render the post after loading the data
         } else {
             console.error("No se ha establecido un ID de post");
         }
@@ -72,28 +72,28 @@ class Post extends HTMLElement {
 
     async addComment(comment: string) {
         if (this.postId) {
-            await addCommentToPost(this.postId, comment); // Llama a la función para agregar comentario en Firestore
+            await addCommentToPost(this.postId, comment); // Calls the function to add a comment to the post
     
-            // Después de agregar el comentario, actualiza la lista local de comentarios
-            this.loadPostData(); // Recarga los comentarios y likes después de agregar uno nuevo
+            // Reload the comments and likes after adding a new one
+            this.loadPostData(); 
         } else {
             console.error("No se ha establecido un ID de post");
         }
     }
 
-    // Función para manejar el evento de like
+    // Function to add or remove a like from the post
     private toggleLike() {
         const userCredential = localStorage.getItem('user');
         const userId = userCredential ? JSON.parse(userCredential).username : null;
         if (userId) {
             if (this.likes.includes(userId)) {
-                removeLike(this.postId, userId); // Si ya le dio like, lo quita
+                removeLike(this.postId, userId); // If the user already liked the post, remove the like
                 this.likes = this.likes.filter((like) => like !== userId);
             } else {
-                likePost(this.postId, userId); // Si no, lo agrega
+                likePost(this.postId, userId); // If the user hasn't liked the post, add the like
                 this.likes.push(userId);
             }
-            this.render(); // Vuelve a renderizar después de agregar/quitar like
+            this.render(); // Render the post after adding or removing the like
         } else {
             alert('Debes iniciar sesión para dar like');
         }
@@ -116,6 +116,7 @@ class Post extends HTMLElement {
                         display: flex;
                         align-items: center;
                         margin-bottom: 12px;
+                        cursor: pointer;
                     }
                     .avatar {
                         width: 40px;
@@ -211,7 +212,7 @@ class Post extends HTMLElement {
             const postHeader = this.shadowRoot.querySelector('.post-header');
             postHeader?.addEventListener('click', () => {
                 getUserIdFromPost(this.postId).then((userId) => {
-                    console.log(userId);
+                    // console.log(userId);
                     localStorage.setItem('external-profile', userId);
                     dispatch(navigate('EXTERNAL_PROFILE'));
                 });

@@ -18,11 +18,11 @@ class ProfileCard extends HTMLElement {
     async connectedCallback() {
         const userCredentials = await getCurrentUserCredentials();
         const userId = await getCurrentUserId();
-        console.log('Credenciales del usuario:', userCredentials);
+        // console.log('Credenciales del usuario:', userCredentials);
         try {
             const originalAvatarUrl = await getImage(userId);
             this.avatarUrl = originalAvatarUrl ? originalAvatarUrl : null;
-            console.log('Imagen del usuario:', this.avatarUrl);
+            // console.log('Imagen del usuario:', this.avatarUrl);
         } catch (error) {
             console.error("Error al obtener la imagen del usuario:", error);
             this.avatarUrl = null; // Dejarlo como nulo si no se obtiene imagen
@@ -143,7 +143,7 @@ class ProfileCard extends HTMLElement {
     setupEventListeners() {
         const editButton = this.shadowRoot?.querySelector('.edit-button');
         editButton?.addEventListener('click', () => {
-        console.log('Editar perfil');
+        // console.log('Editar perfil');
         const editEvent = new CustomEvent('edit-profile', {
             bubbles: true,
             composed: true,
