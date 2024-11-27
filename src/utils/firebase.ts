@@ -307,21 +307,29 @@ export const getLikesForPost = async (postId: string) => {
     }
 };
 
-// Función para obtener todos los posts de Firestore
+// Función para obtener todos los posts de Firestore ordenados por fecha de creación
 export const getPosts = async () => {
     try {
         const { db } = await getFirebaseInstance();
-        const { collection, getDocs } = await import('firebase/firestore');
+        const { collection, getDocs, query, orderBy } = await import('firebase/firestore');
 
+        // Referencia a la colección "posts"
         const postsRef = collection(db, 'posts');
-        const snapshot = await getDocs(postsRef);
 
+        // Crear la consulta para ordenar por "createdAt" en orden descendente
+        const postsQuery = query(postsRef, orderBy('createdAt', 'desc')); // Cambia a 'asc' para orden ascendente
+
+        // Obtener los documentos según la consulta
+        const snapshot = await getDocs(postsQuery);
+
+        // Mapear los documentos a un array
         return snapshot.docs.map((doc: any) => ({ id: doc.id, ...doc.data() }));
     } catch (error) {
         console.error("Error al obtener posts:", error);
         return [];
     }
 };
+
 
 // Función para obtener los posts de un usuario específico
 export const getPostsByUser = async (userId: string) => {

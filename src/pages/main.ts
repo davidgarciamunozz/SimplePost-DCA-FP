@@ -1,12 +1,13 @@
 import Post from '../components/Post/Post';
 import PostCreator from '../components/Post/CreatePost';
 import Navbar from '../components/navigation/NavBar';
-import { appState, dispatch } from "../store/store";
-import { navigate, setAllPosts } from '../store/actions';
-import { addPost, getFirebaseInstance, getPosts } from '../utils/firebase';
+import { dispatch } from "../store/store";
+import { navigate } from '../store/actions';
+import { addPost, getFirebaseInstance ,getPosts} from '../utils/firebase';
 
 class MainPage extends HTMLElement {
     posts: { post: string; comment: string, author?: string, likes?: number, imageURL: string }[] = [];
+    unsubscribe: (() => void) | null = null; // Función para cancelar la suscripción
 
     constructor() {
         super();
@@ -21,10 +22,8 @@ class MainPage extends HTMLElement {
             auth.onAuthStateChanged(async (user: any) => {
                 if (user) {
                     console.log('Usuario autenticado');
-                    if (appState.posts.length === 0) { // Solo carga si `appState.posts` está vacío
-                        await this.loadPostsFromFirestore();
-                    }
                     this.render(); // Renderiza la estructura base de la página
+                    await this.loadPostsFromFirestore(); // Carga los posts de Firestore
                     this.initializePageContent(); // Inicializa y agrega los componentes
                 } else {
                     dispatch(navigate('LOGIN'));
@@ -44,7 +43,7 @@ class MainPage extends HTMLElement {
             }
     
             // Si hay posts, los mapeamos y los agregamos al estado
-            this.posts = fetchedPosts.map(post => ({
+            this.posts = fetchedPosts.map((post: any) => ({
                 post: post.id,
                 comment: post.comment,
                 author: post.author,
@@ -54,7 +53,6 @@ class MainPage extends HTMLElement {
     
             // Solo actualizamos el estado si hay posts
             console.log('Posts cargados:', this.posts);
-            dispatch(setAllPosts(this.posts));
         } catch (error) {
             console.error("Error al cargar posts:", error);
         }
@@ -69,11 +67,10 @@ class MainPage extends HTMLElement {
         container?.appendChild(navbar);
         container?.appendChild(postCreator);
     
-        // Renderiza posts desde `appState` en el orden en que están (con los más recientes al inicio)
-        appState.posts.forEach((post:any) => {
+        //renderizar los post desde firebase
+        this.posts.forEach((post) => {
             this.createPostComponent(post);
         });
-    
         this.shadowRoot?.addEventListener('new-post', async (event: Event) => {
             const { comment, author, imageURL } = (event as CustomEvent).detail;
             const newPost = { post: '', comment, author, likes: 0, imageURL };
@@ -82,9 +79,6 @@ class MainPage extends HTMLElement {
                 // Añade el post a Firebase y obtén el ID del documento
                 const postId = await addPost(newPost);
                 newPost.post = postId;
-    
-                // Añade el nuevo post al `appState` al inicio del array
-                dispatch(setAllPosts([newPost, ...appState.posts]));
     
                 // Inserta el nuevo post en el DOM al principio
                 this.createPostComponent(newPost, true); // Inserta el nuevo post al inicio
